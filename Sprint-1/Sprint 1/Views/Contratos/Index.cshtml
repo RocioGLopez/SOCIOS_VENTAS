@@ -1,0 +1,194 @@
+@{
+    ViewData["Title"] = "Control de Contratos";
+}
+
+<h2 class="mt-4">📄 Control de Contratos</h2>
+
+<!-- Alerta vencimiento próximo -->
+<div id="alerta-vencimiento" class="alert alert-warning d-none">
+    ⚠️ <strong>Atención:</strong> Hay contratos próximos a vencer en menos de 30 días.
+</div>
+
+<!-- Filtro -->
+<div class="row mt-3 mb-3">
+    <div class="col-md-4">
+        <label>Filtrar por proveedor:</label>
+        <input type="text" id="filtroProveedor" class="form-control" placeholder="Nombre del proveedor..." oninput="filtrar()" />
+    </div>
+</div>
+
+<!-- Botón registrar -->
+<div class="mb-3">
+    <button class="btn btn-primary" onclick="mostrarFormulario()">➕ Registrar Contrato</button>
+</div>
+
+<!-- Formulario registro -->
+<div id="formulario-registro" class="card p-4 mb-4 d-none">
+    <h5>Nuevo Contrato</h5>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <label>Número de Contrato</label>
+            <input type="text" id="numero" class="form-control" placeholder="CON-001" />
+        </div>
+        <div class="col-md-3">
+            <label>Proveedor</label>
+            <input type="text" id="proveedor" class="form-control" placeholder="Nombre del proveedor" />
+        </div>
+        <div class="col-md-2">
+            <label>Fecha Inicio</label>
+            <input type="date" id="fechaInicio" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <label>Fecha Vencimiento</label>
+            <input type="date" id="fechaVencimiento" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <label>Documento</label>
+            <input type="file" id="documento" class="form-control" accept=".pdf,.doc,.docx" />
+        </div>
+    </div>
+    <div class="mt-3">
+        <button class="btn btn-success" onclick="registrarContrato()">💾 Guardar</button>
+        <button class="btn btn-secondary ms-2" onclick="ocultarFormulario()">Cancelar</button>
+    </div>
+</div>
+
+<!-- Mensaje error -->
+<div id="mensaje" class="alert d-none"></div>
+
+<!-- Tabla -->
+<div id="contenedor-tabla">
+    <table class="table table-bordered table-hover" id="tabla-contratos">
+        <thead class="table-dark">
+            <tr>
+                <th>N° Contrato</th>
+                <th>Proveedor</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Vencimiento</th>
+                <th>Documento</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody id="cuerpo-tabla"></tbody>
+    </table>
+    <div id="sin-registros" class="text-center p-5 border d-none">
+        <p class="text-muted fs-5">📭 Sin contratos disponibles</p>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const API_URL = 'http://127.0.0.1:5000/contratos';
+    let todosLosContratos = [];
+
+    async function cargarContratos() {
+        const msg = document.getElementById('mensaje');
+        msg.className = 'alert d-none';
+
+        try {
+            const res = await fetch(API_URL);
+            if (!res.ok) throw new Error('Error del servidor');
+            const datos = await res.json();
+            todosLosContratos = datos;
+            verificarVencimientos(datos);
+            renderTabla(datos);
+        } catch (e) {
+            msg.className = 'alert alert-danger';
+            msg.textContent = '⚠️ No se pudo conectar al servidor.';
+        }
+    }
+
+    function verificarVencimientos(datos) {
+        const hoy = new Date();
+        const alerta = document.getElementById('alerta-vencimiento');
+        const proximoAVencer = datos.some(c => {
+            const venc = new Date(c.vencimiento);
+            const diff = (venc - hoy) / (1000 * 60 * 60 * 24);
+            return diff >= 0 && diff <= 30;
+        });
+        alerta.classList.toggle('d-none', !proximoAVencer);
+    }
+
+    function renderTabla(datos) {
+        const tbody = document.getElementById('cuerpo-tabla');
+        const sinReg = document.getElementById('sin-registros');
+        const tabla = document.getElementById('tabla-contratos');
+        tbody.innerHTML = '';
+
+        if (datos.length === 0) {
+            tabla.classList.add('d-none');
+            sinReg.classList.remove('d-none');
+            return;
+        }
+
+        tabla.classList.remove('d-none');
+        sinReg.classList.add('d-none');
+
+        datos.forEach(item => {
+            const badgeColor = item.estado === 'Activo' ? 'success'
+                             : item.estado === 'Por vencer' ? 'warning'
+                             : 'danger';
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.numero}</td>
+                    <td>${item.proveedor}</td>
+                    <td>${item.inicio}</td>
+                    <td>${item.vencimiento}</td>
+                    <td>📎 ${item.documento}</td>
+                    <td><span class="badge bg-${badgeColor}">${item.estado}</span></td>
+                </tr>`;
+        });
+    }
+
+    function filtrar() {
+        const filtro = document.getElementById('filtroProveedor').value.toLowerCase();
+        const filtrados = todosLosContratos.filter(c =>
+            c.proveedor.toLowerCase().includes(filtro)
+        );
+        renderTabla(filtrados);
+    }
+
+    function mostrarFormulario() {
+        document.getElementById('formulario-registro').classList.remove('d-none');
+    }
+
+    function ocultarFormulario() {
+        document.getElementById('formulario-registro').classList.add('d-none');
+    }
+
+    function registrarContrato() {
+        const numero = document.getElementById('numero').value;
+        const proveedor = document.getElementById('proveedor').value;
+        const inicio = document.getElementById('fechaInicio').value;
+        const vencimiento = document.getElementById('fechaVencimiento').value;
+        const documento = document.getElementById('documento').files[0];
+
+        if (!numero || !proveedor || !inicio || !vencimiento) {
+            alert('Por favor complete todos los campos.');
+            return;
+        }
+
+        const hoy = new Date();
+        const venc = new Date(vencimiento);
+        const diff = (venc - hoy) / (1000 * 60 * 60 * 24);
+        const estado = diff < 0 ? 'Vencido' : diff <= 30 ? 'Por vencer' : 'Activo';
+
+        const nuevo = {
+            id: todosLosContratos.length + 1,
+            numero,
+            proveedor,
+            inicio,
+            vencimiento,
+            estado,
+            documento: documento ? documento.name : 'Sin documento'
+        };
+
+        todosLosContratos.push(nuevo);
+        verificarVencimientos(todosLosContratos);
+        renderTabla(todosLosContratos);
+        ocultarFormulario();
+    }
+
+    cargarContratos();
+</script>
+}

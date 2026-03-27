@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PrototipoCompras</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        /* shared header/nav styled similar to login page */
+        header.dg-header {
+            background-color: cyan;
+            display: flex;
+            align-items: center;
+            padding: 20px 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        header.dg-header .brand h1 {
+            margin: 0;
+            font-family: 'Showcard Gothic', sans-serif;
+            font-size: 48px;
+            color: black;
+        }
+        nav.dg-nav a {
+            margin-left: 18px;
+            color: black;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 10px;
+            border-radius: 6px;
+        }
+        nav.dg-nav a:hover {
+            background: rgba(0,0,0,0.04);
+        }
+    </style>
+</head>
+<body>
+    <header class="dg-header">
+        <div class="brand">
+            @if (User?.Identity?.IsAuthenticated == true)
+            {
+                <h1>Bienvenido, @User.Identity.Name</h1>
+            }
+            else
+            {
+                <h1>GESTION DE COMPRAS</h1>
+            }
+        </div>
+        <nav class="dg-nav">
+            <a asp-controller="Solicitudes" asp-action="Create">Nueva Solicitud</a>
+            <a asp-controller="Solicitudes" asp-action="BossPanel">Panel del Jefe</a>
+            <a asp-controller="Proveedores" asp-action="CreateEval">Evaluar Proveedor</a>
+            <a asp-controller="Proveedores" asp-action="History">Historial Evaluaciones</a>
+            <a asp-controller="Historial" asp-action="Index">Historial de Compras</a>
+            <a asp-controller="Contratos" asp-action="Index">Control de Contratos</a>
+            <a asp-controller="Ordenes" asp-action="Index">Órdenes de Compra</a>
+        </nav>
+    </header>
+    <div class="container">
+        @RenderBody()
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

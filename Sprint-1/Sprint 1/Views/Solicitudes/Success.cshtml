@@ -1,0 +1,209 @@
+@model PrototipoCompras.Models.SolicitudCompra
+@{
+    ViewData["Title"] = "Solicitud Creada";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Solicitud Creada · Gestión de Compras</title>
+    <style>
+        * { box-sizing: border-box; }
+        
+        body {
+            background: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: cyan;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .header-title {
+            margin: 0;
+            color: black;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 12px;
+        }
+
+        .header-nav a {
+            padding: 8px 16px;
+            background-color: rgba(0,0,0,0.1);
+            color: black;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .header-nav a:hover {
+            background-color: rgba(0,0,0,0.2);
+        }
+
+        main {
+            flex: 1;
+            padding: 40px 20px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .success-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .success-container h2 {
+            color: #4CAF50;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            text-align: left;
+            border-left: 3px solid cyan;
+        }
+
+        .info-box p {
+            margin: 12px 0;
+            color: #333;
+        }
+
+        .info-box b {
+            color: #222;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+            margin: 10px 6px;
+        }
+
+        .btn-primary {
+            background-color: cyan;
+            color: black;
+            box-shadow: 0 2px 8px rgba(154, 205, 50, 0.3);
+        }
+
+        .btn-primary:hover {
+            background-color: #9acd32;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(154, 205, 50, 0.4);
+        }
+
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e8e8e8;
+        }
+
+        footer {
+            background-color: black;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            width: 100vw;
+            margin-left: calc(-50vw + 50%);
+            margin-top: 40px;
+        }
+
+        @@media (max-width: 900px) {
+            main {
+                padding: 25px 15px;
+            }
+            .success-container {
+                padding: 25px;
+            }
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .header-nav {
+                width: 100%;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+        }
+
+        @@media (max-width: 600px) {
+            main {
+                padding: 15px 10px;
+            }
+            .success-container {
+                padding: 15px;
+            }
+            .btn {
+                width: 100%;
+                margin: 8px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main>
+        <div class="success-container">
+            <div class="success-icon">✅</div>
+            <h2>Solicitud creada exitosamente</h2>
+
+            <div class="info-box">
+                <p><b>ID de la solicitud:</b> @Model.Id</p>
+                <p><b>Estado:</b> @Model.Estado</p>
+                <p><b>Tiempo de guardado:</b> @(ViewBag.TiempoMs ?? 0) ms (meta ≤ 3000 ms)</p>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <a asp-action="Create" class="btn btn-primary">Crear otra solicitud</a>
+                <a asp-action="BossPanel" class="btn btn-secondary">Ir al Panel del Jefe</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        &copy; 2026 Gestion de compras. Todos los derechos reservados.
+    </footer>
+</body>
+</html>

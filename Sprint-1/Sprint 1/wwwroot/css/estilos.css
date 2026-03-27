@@ -1,0 +1,86 @@
+/* Estilos para el login de Gestión de Compras */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+:root{
+  --accent: #6CC24A;
+  --accent-dark: #5aa53d;
+  --danger: #c64949;
+  --muted: #6b7280;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family: 'Poppins', Arial, sans-serif;
+  background: linear-gradient(135deg,#f6f9ff 0%, #e6f2ff 50%, #f7fff3 100%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:32px;
+}
+
+.auth-wrap{
+  width:100%;
+  max-width:960px;
+  display:grid;
+  grid-template-columns:1fr 420px;
+  gap:32px;
+  align-items:center;
+}
+
+.brand-panel{
+  padding:40px;
+}
+.brand-panel h1{
+  font-size:48px;
+  margin:0 0 8px 0;
+  letter-spacing:2px;
+}
+.brand-panel p{color:var(--muted); font-size:18px; margin-top:6px}
+
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.92));
+  padding:34px;
+  border-radius:14px;
+  box-shadow: 0 12px 30px rgba(16,24,40,0.08);
+}
+
+.card h2{margin:0 0 14px 0; font-size:26px}
+.card p.lead{margin:0 0 18px 0; color:var(--muted)}
+
+.form-group{margin-bottom:16px}
+.form-group label{display:block; font-weight:600; margin-bottom:8px}
+.form-control{
+  width:100%;
+  padding:12px 14px;
+  font-size:16px;
+  border:1px solid #e6e9ef;
+  border-radius:8px;
+  background:white;
+  transition:box-shadow .15s, border-color .15s;
+}
+.form-control:focus{outline:none; box-shadow:0 6px 18px rgba(30,64,175,0.06); border-color:#cbd5ff}
+
+.actions{display:flex; gap:12px; align-items:center; justify-content:space-between; margin-top:8px}
+.btn{padding:10px 18px; font-size:16px; border-radius:10px; border:none; cursor:pointer}
+.btn-primary{background:var(--accent); color:white; box-shadow:0 6px 18px rgba(108,194,74,0.18)}
+.btn-primary:hover{background:var(--accent-dark)}
+.btn-outline{background:transparent; color:var(--muted); border:1px solid #e6e9ef}
+
+.muted-link{color:var(--muted); text-decoration:none; font-size:14px}
+
+.small{font-size:14px; color:var(--muted)}
+
+.footer-note{margin-top:18px; font-size:13px; color:#9aa0a6; text-align:center}
+
+@media (max-width:900px){
+  .auth-wrap{grid-template-columns:1fr; max-width:420px}
+  .brand-panel{display:none}
+}
+
+/* botones secundarios con color */
+.btn-danger{background:var(--danger); color:white}
+.btn-accent{background:cadetblue; color:white}
+
+.show-password{display:inline-flex; align-items:center; gap:8px; color:var(--muted); font-size:14px}

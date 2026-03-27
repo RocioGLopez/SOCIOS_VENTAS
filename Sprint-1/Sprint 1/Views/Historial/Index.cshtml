@@ -1,0 +1,137 @@
+@{
+    ViewData["Title"] = "Historial de Compras";
+}
+
+<h2 class="mt-4">📋 Historial de Compras</h2>
+
+<!-- Filtros -->
+<div class="row mt-3 mb-3">
+    <div class="col-md-3">
+        <label>Desde:</label>
+        <input type="date" id="fechaInicio" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label>Hasta:</label>
+        <input type="date" id="fechaFin" class="form-control" />
+    </div>
+    <div class="col-md-3 d-flex align-items-end gap-2">
+        <button class="btn btn-primary" onclick="filtrar()">🔍 Filtrar</button>
+        <button class="btn btn-secondary" onclick="limpiar()">✖ Limpiar</button>
+    </div>
+</div>
+
+<!-- Exportar -->
+<div class="mb-3 d-flex gap-2">
+    <button class="btn btn-success" onclick="exportarExcel()">📊 Exportar Excel</button>
+    <button class="btn btn-danger" onclick="window.print()">📄 Exportar PDF</button>
+</div>
+
+<!-- Mensaje de carga/error -->
+<div id="mensaje" class="alert d-none"></div>
+
+<!-- Tabla -->
+<div id="contenedor-tabla">
+    <table class="table table-bordered table-hover" id="tabla-historial">
+        <thead class="table-dark">
+            <tr>
+                <th>Fecha</th>
+                <th>Proveedor</th>
+                <th>Monto</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody id="cuerpo-tabla"></tbody>
+    </table>
+    <div id="sin-registros" class="text-center p-5 border border-dashed d-none">
+        <p class="text-muted fs-5">📭 Sin historial disponible</p>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const API_URL = 'http://127.0.0.1:5000/compras/historial';
+    let todosLosRegistros = [];
+
+    async function cargarHistorial(inicio = '', fin = '') {
+        const msg = document.getElementById('mensaje');
+        msg.className = 'alert d-none';
+
+        try {
+            let url = API_URL;
+            const params = new URLSearchParams();
+            if (inicio) params.append('inicio', inicio);
+            if (fin) params.append('fin', fin);
+            if (params.toString()) url += '?' + params.toString();
+
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('Error del servidor');
+
+            const datos = await res.json();
+            todosLosRegistros = datos;
+            renderTabla(datos);
+        } catch (e) {
+            msg.className = 'alert alert-danger';
+            msg.textContent = '⚠️ No se pudo conectar al servidor. Verifique que el backend esté corriendo.';
+        }
+    }
+
+    function renderTabla(datos) {
+        const tbody = document.getElementById('cuerpo-tabla');
+        const sinReg = document.getElementById('sin-registros');
+        const tabla = document.getElementById('tabla-historial');
+
+        tbody.innerHTML = '';
+
+        if (datos.length === 0) {
+            tabla.classList.add('d-none');
+            sinReg.classList.remove('d-none');
+            return;
+        }
+
+        tabla.classList.remove('d-none');
+        sinReg.classList.add('d-none');
+
+        datos.forEach(item => {
+            const badgeColor = item.estado === 'Pagado' ? 'success'
+                             : item.estado === 'Pendiente' ? 'warning'
+                             : 'danger';
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.fecha}</td>
+                    <td>${item.proveedor}</td>
+                    <td>Q ${parseFloat(item.monto).toFixed(2)}</td>
+                    <td><span class="badge bg-${badgeColor}">${item.estado}</span></td>
+                </tr>`;
+        });
+    }
+
+    function filtrar() {
+        const inicio = document.getElementById('fechaInicio').value;
+        const fin = document.getElementById('fechaFin').value;
+        cargarHistorial(inicio, fin);
+    }
+
+    function limpiar() {
+        document.getElementById('fechaInicio').value = '';
+        document.getElementById('fechaFin').value = '';
+        cargarHistorial();
+    }
+
+    function exportarExcel() {
+        const filas = todosLosRegistros.map(r =>
+            [r.fecha, r.proveedor, parseFloat(r.monto).toFixed(2), r.estado].join(',')
+        );
+        const csv = ['Fecha,Proveedor,Monto,Estado', ...filas].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'historial_compras.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // Cargar al inicio
+    cargarHistorial();
+</script>
+}
