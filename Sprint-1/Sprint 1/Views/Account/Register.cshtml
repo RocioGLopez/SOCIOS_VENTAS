@@ -13,18 +13,19 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body style="background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+<body style="background: #273F8F; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
 
 <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     .form-container { background: white; padding: 40px; border-radius: 12px; max-width: 480px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
-    .form-container h2 { margin: 0 0 12px; color: #222; }
+    .form-container h2 { margin: 0 0 12px; color: #111; }
+    .form-container p { color: #111; }
     .form-group { margin-bottom: 16px; }
     .form-group label { font-weight: 600; color: #333; display: block; margin-bottom: 4px; }
     .form-group input { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; }
     .form-actions { display: flex; gap: 10px; margin-top: 20px; }
-    .btn-primary { background: cyan; color: black; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-    .btn-primary:hover { background: #9acd32; }
+    .btn-primary { background: #273F8F; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    .btn-primary:hover { background: #1a295a; }
     .btn-outline { background: #f0f0f0; border: 1px solid #ccc; padding: 10px 20px; border-radius: 6px; text-decoration: none; color: #333; cursor: pointer; }
     .btn-outline:hover { background: #e0e0e0; }
     .validation-errors { background: #ffebee; color: #a00; padding: 12px; border-radius: 6px; margin-bottom: 16px; }
@@ -92,10 +93,11 @@
                     <button type="submit" class="btn-primary">Crear</button>
                 </div>
             </form>
+
         </div>
 
-</body>
-</html>
+    </body>
+    </html>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

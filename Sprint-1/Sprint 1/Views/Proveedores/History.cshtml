@@ -22,7 +22,8 @@
         }
 
         header {
-            background-color: cyan;
+            background-color: #273F8F;
+            color: white;
             padding: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             display: flex;
@@ -115,7 +116,7 @@
             padding: 12px 16px;
             background-color: #f0f0f0;
             border-radius: 6px;
-            border-left: 3px solid cyan;
+            border-left: 3px solid #273F8F;
         }
 
         .btn {
@@ -132,8 +133,8 @@
         }
 
         .btn-primary {
-            background-color: cyan;
-            color: black;
+            background-color: #273F8F;
+            color: white;
             box-shadow: 0 2px 8px rgba(154, 205, 50, 0.3);
         }
 
@@ -197,7 +198,7 @@
 
     <main>
         <div class="page-header">
-            <h2>Historial de Evaluaciones</h2>
+            <h2>📋 Historial de Evaluaciones</h2>
         </div>
 
         @if (ViewBag.TiempoMs != null)
@@ -236,8 +237,5 @@
         <a href="/Proveedores/CreateEval" class="btn btn-primary">Registrar otra evaluación</a>
     </main>
 
-    <footer>
-        &copy; 2026 Gestion de compras. Todos los derechos reservados.
-    </footer>
 </body>
 </html>
