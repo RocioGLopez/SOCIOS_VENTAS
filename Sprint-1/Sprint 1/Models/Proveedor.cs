@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace PrototipoCompras.Models;
-
+//dfsdfasda
 public class Proveedor
 {
     public int Id { get; set; }
