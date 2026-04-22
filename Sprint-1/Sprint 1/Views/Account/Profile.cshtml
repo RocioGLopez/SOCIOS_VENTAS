@@ -1,0 +1,205 @@
+@model PrototipoCompras.Models.UserAccount
+@{
+    ViewData["Title"] = "Mi Cuenta";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .profile-container {
+        max-width: 600px;
+        margin: 20px auto;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .profile-container h2 {
+        color: #273F8F;
+        margin-bottom: 30px;
+        font-size: 28px;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        min-width: 150px;
+        text-align: right;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .form-group input {
+        flex: 1;
+        padding: 10px 12px;
+        border: none;
+        border-bottom: 2px solid #000;
+        font-size: 16px;
+        background: transparent;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-bottom-color: #273F8F;
+    }
+
+    .divider {
+        border-top: 2px solid #e0e0e0;
+        margin: 30px 0;
+    }
+
+    .error-message {
+        background-color: #ffebee;
+        color: #a00;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+    }
+
+    .success-message {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .form-actions button, .form-actions a {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s;
+    }
+
+    .btn-primary {
+        background-color: #9acd32;
+        color: #273F8F;
+    }
+
+    .btn-primary:hover {
+        background-color: #7da82e;
+    }
+
+    .btn-secondary {
+        background-color: #273F8F;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #1a295a;
+    }
+
+    @@media (max-width: 768px) {
+        .profile-container {
+            padding: 20px;
+            margin: 10px;
+        }
+
+        .form-group {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .form-group label {
+            min-width: auto;
+            text-align: left;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions button, .form-actions a {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="profile-container">
+    <h2>Mi Cuenta</h2>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="error-message">
+            @foreach (var e in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <div>@e.ErrorMessage</div>
+            }
+        </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="success-message">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <form method="post" asp-action="Profile">
+        @Html.AntiForgeryToken()
+
+        <div class="form-group">
+            <label for="nombres">Nombres:</label>
+            <input type="text" id="nombres" name="nombres" value="@(Model?.Nombres ?? string.Empty)" />
+        </div>
+
+        <div class="form-group">
+            <label for="apellidos">Apellidos:</label>
+            <input type="text" id="apellidos" name="apellidos" value="@(Model?.Apellidos ?? string.Empty)" />
+        </div>
+
+        <div class="form-group">
+            <label for="email">Correo:</label>
+            <input type="email" id="email" name="email" value="@(Model?.Email ?? string.Empty)" disabled style="border-bottom-color: #ccc; color: #999;" />
+        </div>
+
+        <div class="form-group">
+            <label for="telefono">Teléfono:</label>
+            <input type="text" id="telefono" name="telefono" value="@(Model?.Telefono ?? string.Empty)" />
+        </div>
+
+        <div class="form-group">
+            <label for="direccion">Dirección:</label>
+            <input type="text" id="direccion" name="direccion" value="@(Model?.Direccion ?? string.Empty)" />
+        </div>
+
+        <div class="form-group">
+            <label for="nacimiento">Fecha de nacimiento:</label>
+            <input type="date" id="nacimiento" name="nacimiento" value="@(Model?.FechaNacimiento?.ToString("yyyy-MM-dd") ?? string.Empty)" />
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="form-group">
+            <label for="new_password">Nueva contraseña:</label>
+            <input type="password" id="new_password" name="new_password" placeholder="Dejar vacío para no cambiar" />
+        </div>
+
+        <div class="form-group">
+            <label for="confirm_password">Confirmar:</label>
+            <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirmar nueva contraseña" />
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Actualizar</button>
+            <a href="/" class="btn-secondary">Volver</a>
+        </div>
+    </form>
+</div>

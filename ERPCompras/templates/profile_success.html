@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Éxito - Gestión de Compras</title>
+  <style>
+    * { box-sizing: border-box; }
+    
+    body {
+      background: linear-gradient(135deg, #f5f5f5 0%, #e8f5e9 100%);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: #273F8F;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 40px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .izquierda {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .izquierda h1 {
+      color: white;
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .derecha {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .derecha a {
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .derecha img {
+      height: 40px;
+      width: 40px;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .derecha img:hover {
+      transform: scale(1.1);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .success-container {
+      max-width: 500px;
+      background: white;
+      padding: 60px 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .success-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+
+    .success-container h1 {
+      color: #2e7d32;
+      font-size: 32px;
+      margin: 20px 0;
+    }
+
+    .success-container p {
+      color: #666;
+      font-size: 18px;
+      margin: 20px 0 40px 0;
+      line-height: 1.6;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .button-group a {
+      padding: 15px 40px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.3s;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background-color: #9acd32;
+      color: #273F8F;
+    }
+
+    .btn-primary:hover {
+      background-color: #7da82e;
+    }
+
+    .btn-secondary {
+      background-color: #5a7bbf;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #3d5a99;
+    }
+
+    footer {
+      background-color: black;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .success-container {
+        padding: 40px 25px;
+      }
+
+      .success-icon {
+        font-size: 60px;
+      }
+
+      .success-container h1 {
+        font-size: 24px;
+      }
+
+      .success-container p {
+        font-size: 16px;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .button-group a {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="izquierda">
+      <h1>Gestión de Compras</h1>
+    </div>
+    <div class="derecha">
+      <a href="/profile" title="Mi Cuenta">👤</a>
+      <a href="/dashboard" title="Volver">🏠</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="success-container">
+      <div class="success-icon">✅</div>
+      <h1>¡Éxito!</h1>
+      <p>{{ message }}</p>
+      <div class="button-group">
+        <a href="/profile" class="btn-primary">Editar Perfil</a>
+        <a href="/dashboard" class="btn-secondary">Ir al Dashboard</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2026 Gestión de Compras. Todos los derechos reservados.
+  </footer>
+</body>
+</html>

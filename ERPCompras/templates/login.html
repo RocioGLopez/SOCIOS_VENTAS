@@ -1,12 +1,9 @@
-@{
-    Layout = null;
-}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>GESTION DE COMPRAS · Iniciar sesión</title>
+    <title>Iniciar sesión - Gestión de Compras</title>
     <style>
         * { box-sizing: border-box; }
         
@@ -20,21 +17,12 @@
         }
 
         header {
-              background-color: #273F8F;
+            background-color: #273F8F;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 25px 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .izquierda h1 {
-            color: white;
-            font-family: 'Showcard Gothic', sans-serif;
-            margin: 0;
-            font-size: 65px;
-            word-break: break-word;
-            text-shadow: 1px 1px 1px rgba(255,255,255,0.3);
         }
 
         main {
@@ -139,9 +127,18 @@
             background-color: #e0e0e0;
         }
 
-        .validation-errors {
+        .error {
             background-color: #ffebee;
             color: #a00;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
             padding: 12px;
             border-radius: 6px;
             margin-bottom: 15px;
@@ -175,9 +172,6 @@
             header {
                 padding: 20px 10px;
             }
-            .izquierda h1 {
-                font-size: 48px;
-            }
             .form {
                 padding: 30px;
                 max-width: 90%;
@@ -187,9 +181,6 @@
         @@media (max-width: 600px) {
             header {
                 padding: 15px 10px;
-            }
-            .izquierda h1 {
-                font-size: 32px;
             }
             main {
                 padding: 20px 10px;
@@ -214,7 +205,6 @@
 </head>
 <body>
     <header>
-
     </header>
 
     <main>
@@ -222,22 +212,18 @@
             <h2>Inicio de sesión</h2>
             <p>Introduce tu correo y contraseña para continuar</p>
 
-            @if (!ViewData.ModelState.IsValid)
-            {
-                <div class="validation-errors">
-                    @foreach (var e in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                    {
-                        <div>@e.ErrorMessage</div>
-                    }
-                </div>
-            }
+            {% if error %}
+                <div class="error">{{ error }}</div>
+            {% endif %}
 
-            <form method="post" action="/Account/Login" id="loginForm">
-                @Html.AntiForgeryToken()
-                
+            {% if success %}
+                <div class="success">{{ success }}</div>
+            {% endif %}
+
+            <form method="post">
                 <div class="form-group">
                     <label for="email">Correo electrónico</label>
-                    <input id="email" name="email" type="email" required placeholder="tucorreo@ejemplo.com" value="@(ViewData["Email"] ?? string.Empty)" />
+                    <input id="email" name="email" type="email" required placeholder="tucorreo@ejemplo.com" />
                 </div>
 
                 <div class="form-group">
@@ -249,11 +235,11 @@
                     <label class="show-password">
                         <input type="checkbox" data-toggle="contrasena"> Mostrar contraseña
                     </label>
-                    <a href="/Account/RecoverPassword" style="color: #273F8F; text-decoration: none; font-size: 13px;">¿Olvidaste tu contraseña?</a>
+                    <a href="/recover-password" style="color: #273F8F; text-decoration: none;">¿Olvidaste tu contraseña?</a>
                 </div>
 
                 <div class="form-actions">
-                    <a href="/Account/Register" class="btn-outline">Crear cuenta</a>
+                    <a href="/register" class="btn-outline">Crear cuenta</a>
                     <button type="submit" class="btn-primary">Ingresar</button>
                 </div>
             </form>
@@ -261,9 +247,20 @@
     </main>
 
     <footer>
-        &copy; 2026 Gestion de compras. Todos los derechos reservados.
+        &copy; 2026 Gestión de compras. Todos los derechos reservados.
     </footer>
 
-    <script src="~/js/login.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkbox = document.querySelector('[data-toggle="contrasena"]');
+            const passwordInput = document.getElementById('contrasena');
+
+            if (checkbox) {
+                checkbox.addEventListener('change', function() {
+                    passwordInput.type = this.checked ? 'text' : 'password';
+                });
+            }
+        });
+    </script>
 </body>
 </html>
