@@ -23,16 +23,70 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            padding: 30px 50px;
+            padding: 20px 50px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            position: relative;
         }
 
-        header.dg-header .brand h1 {
-            margin: 0 0 20px 0;
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .header-top .brand h1 {
+            margin: 0;
             font-family: 'Segoe UI', Tahoma, sans-serif;
             font-size: 36px;
             color: white;
             font-weight: bold;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .profile-btn {
+            background-color: #9acd32;
+            color: #273F8F;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .profile-btn:hover {
+            background-color: #7da82e;
+            transform: scale(1.1);
+        }
+
+        .logout-btn {
+            background-color: #f0f0f0;
+            color: #273F8F;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background-color: #e0e0e0;
         }
 
         nav.dg-nav {
@@ -79,14 +133,25 @@
 </head>
 <body>
     <header class="dg-header">
-        <div class="brand">
+        <div class="header-top">
+            <div class="brand">
+                @if (User?.Identity?.IsAuthenticated == true)
+                {
+                    <h1>Bienvenido, @User.Identity.Name</h1>
+                }
+                else
+                {
+                    <h1>GESTIÓN DE COMPRAS</h1>
+                }
+            </div>
             @if (User?.Identity?.IsAuthenticated == true)
             {
-                <h1>Bienvenido, @User.Identity.Name</h1>
-            }
-            else
-            {
-                <h1>GESTIÓN DE COMPRAS</h1>
+                    <div class="header-actions">
+                        <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline; margin:0; padding:0;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="logout-btn">Cerrar sesión</button>
+                        </form>
+                    </div>
             }
         </div>
         <nav class="dg-nav">

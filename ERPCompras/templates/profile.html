@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Cuenta - Gestión de Compras</title>
+  <style>
+    * { box-sizing: border-box; }
+    
+    body {
+      background: linear-gradient(135deg, #f5f5f5 0%, #e8f5e9 100%);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: #273F8F;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 40px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .izquierda {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .izquierda a {
+      text-decoration: none;
+    }
+
+    .izquierda img {
+      height: 50px;
+      width: auto;
+    }
+
+    header h1 {
+      color: white;
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .derecha {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .derecha a {
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .derecha img {
+      height: 40px;
+      width: 40px;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .derecha img:hover {
+      transform: scale(1.1);
+    }
+
+    main.perfil {
+      flex: 1;
+      padding: 40px 20px;
+    }
+
+    .perfil > div:first-child {
+      display: none;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #273F8F;
+      text-align: center;
+      margin-top: 0;
+    }
+
+    .formulario-perfil {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .formulario-perfil > div {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .formulario-perfil label {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      min-width: 140px;
+    }
+
+    .formulario-perfil input {
+      flex: 1;
+      font-size: 18px;
+      border: none;
+      border-bottom: 2px solid #000;
+      padding: 8px 0;
+      background: transparent;
+      transition: border-color 0.3s;
+    }
+
+    .formulario-perfil input:focus {
+      outline: none;
+      border-bottom-color: #273F8F;
+    }
+
+    .formulario-perfil input:disabled {
+      border-bottom-color: #ccc;
+      color: #999;
+      cursor: not-allowed;
+    }
+
+    .divider {
+      border-top: 2px solid #e0e0e0;
+      margin: 20px 0;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    button, .form-actions a {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: background 0.3s;
+    }
+
+    button[type="submit"] {
+      background-color: #9acd32;
+      color: #273F8F;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #7da82e;
+    }
+
+    .form-actions a {
+      background-color: #5a7bbf;
+      color: white;
+    }
+
+    .form-actions a:hover {
+      background-color: #3d5a99;
+    }
+
+    .error {
+      background-color: #ffebee;
+      color: #a00;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .success {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    footer {
+      background-color: black;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      margin-top: auto;
+    }
+
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .izquierda {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .derecha {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .container {
+        padding: 25px;
+      }
+
+      .formulario-perfil > div {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .formulario-perfil label {
+        min-width: auto;
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      button, .form-actions a {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="izquierda">
+      <a href="/dashboard">
+        <h1>Gestión de Compras</h1>
+      </a>
+    </div>
+    <div class="derecha">
+      <a href="/profile" title="Mi Cuenta">👤</a>
+      <a href="/dashboard" title="Volver">🏠</a>
+    </div>
+  </header>
+
+  <main class="perfil">
+    <div id="mensajes-pagina" data-error="{{ error or '' }}" data-exito="{{ exito or '' }}"></div>
+
+    <div class="container">
+      <h1>Mi Cuenta</h1>
+
+      {% if error %}
+        <div class="error">{{ error }}</div>
+      {% endif %}
+
+      {% if success %}
+        <div class="success">{{ success }}</div>
+      {% endif %}
+
+      <form class="formulario-perfil" method="POST">
+        
+        <div>
+          <label for="nombre">Nombre:</label>
+          <input type="text" id="nombre" name="nombre" value="{{ user.get('nombre', '') }}" required>
+        </div>
+
+        <div>
+          <label for="email">Correo:</label>
+          <input type="email" id="email" name="email" value="{{ user['email'] }}" disabled>
+        </div>
+
+        <div class="divider"></div>
+
+        <div>
+          <label for="new_password">Nueva contraseña:</label>
+          <input type="password" id="new_password" name="new_password" placeholder="Dejar vacío para no cambiar">
+        </div>
+
+        <div>
+          <label for="confirm_password">Confirmar:</label>
+          <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirmar nueva contraseña">
+        </div>
+
+        <div class="form-actions">
+          <button type="submit">Actualizar</button>
+          <a href="/logout">Cerrar sesión</a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2026 Gestión de Compras. Todos los derechos reservados.
+  </footer>
+  <script src="/static/js/mensajes.js"></script>
+</body>
+</html>

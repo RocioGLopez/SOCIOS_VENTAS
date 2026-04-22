@@ -154,4 +154,129 @@ public class AccountController : Controller
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction("Login", "Account");
     }
+
+    [HttpGet]
+    public IActionResult RecoverPassword()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult RecoverPassword(string email, string nueva_password, string confirmar_password)
+    {
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(nueva_password) || string.IsNullOrWhiteSpace(confirmar_password))
+        {
+            ModelState.AddModelError(string.Empty, "Todos los campos son requeridos.");
+            return View();
+        }
+
+        if (nueva_password != confirmar_password)
+        {
+            ModelState.AddModelError(string.Empty, "Las contraseñas no coinciden.");
+            return View();
+        }
+
+        if (nueva_password.Length < 6)
+        {
+            ModelState.AddModelError(string.Empty, "La contraseña debe tener al menos 6 caracteres.");
+            return View();
+        }
+
+        var users = ReadUsers();
+        var user = users.FirstOrDefault(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+        
+        if (user == null)
+        {
+            ModelState.AddModelError(string.Empty, "No existe una cuenta con ese correo.");
+            return View();
+        }
+
+        // Generar nuevo salt y hash para la nueva contraseña
+        var newSalt = CreateSalt();
+        var newHash = HashPassword(nueva_password, newSalt);
+
+        user.Salt = newSalt;
+        user.PasswordHash = newHash;
+
+        WriteUsers(users);
+
+        ViewData["SuccessMessage"] = "Contraseña actualizada exitosamente. Por favor, inicia sesión con tu nueva contraseña.";
+        return View();
+    }
+
+    [HttpGet]
+    public IActionResult Profile()
+    {
+        if (!User?.Identity?.IsAuthenticated == true)
+        {
+            return RedirectToAction("Login");
+        }
+
+        var users = ReadUsers();
+        var userEmail = User.Identity.Name;
+        var user = users.FirstOrDefault(u => u.Email.Equals(userEmail, StringComparison.OrdinalIgnoreCase));
+
+        if (user == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        return View(user);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Profile(string nombres, string apellidos, string telefono, string direccion, string nacimiento, string new_password, string confirm_password)
+    {
+        if (!User?.Identity?.IsAuthenticated == true)
+        {
+            return RedirectToAction("Login");
+        }
+
+        var users = ReadUsers();
+        var userEmail = User.Identity.Name;
+        var user = users.FirstOrDefault(u => u.Email.Equals(userEmail, StringComparison.OrdinalIgnoreCase));
+
+        if (user == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        // Validar contraseña si se intenta cambiar
+        if (!string.IsNullOrWhiteSpace(new_password) || !string.IsNullOrWhiteSpace(confirm_password))
+        {
+            if (new_password != confirm_password)
+            {
+                ModelState.AddModelError(string.Empty, "Las contraseñas no coinciden.");
+                return View(user);
+            }
+
+            if (new_password.Length < 6)
+            {
+                ModelState.AddModelError(string.Empty, "La contraseña debe tener al menos 6 caracteres.");
+                return View(user);
+            }
+
+            // Cambiar contraseña
+            user.Salt = CreateSalt();
+            user.PasswordHash = HashPassword(new_password, user.Salt);
+        }
+
+        // Actualizar datos
+        user.Nombres = nombres ?? string.Empty;
+        user.Apellidos = apellidos ?? string.Empty;
+        user.Telefono = telefono ?? string.Empty;
+        user.Direccion = direccion ?? string.Empty;
+
+        if (DateTime.TryParse(nacimiento, out var fn))
+        {
+            user.FechaNacimiento = fn;
+        }
+
+        WriteUsers(users);
+
+        TempData["SuccessMessage"] = "Datos actualizados exitosamente.";
+        return RedirectToAction("Profile");
+    }
 }
