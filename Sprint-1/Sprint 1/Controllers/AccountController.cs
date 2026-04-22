@@ -79,8 +79,9 @@ public class AccountController : Controller
 
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, user.Nombres ?? user.Email),
-            new Claim(ClaimTypes.Email, user.Email)
+            new Claim(ClaimTypes.Name, user.Email), // Usar siempre el email como Name
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim("FullName", user.Nombres ?? string.Empty) // Opcional: para mostrar el nombre
         };
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -139,7 +140,12 @@ public class AccountController : Controller
         WriteUsers(users);
 
         // sign-in after register
-        var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Nombres ?? user.Email), new Claim(ClaimTypes.Email, user.Email) };
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.Email), // Usar siempre el email como Name
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim("FullName", user.Nombres ?? string.Empty)
+        };
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
