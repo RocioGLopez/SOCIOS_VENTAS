@@ -21,8 +21,8 @@ El sistema permite mejorar la organización de la información, reducir errores 
 - Herramientas: Visual Studio, Visual Studio Code
 - Control de versiones: GitHub
 
-- # Equipo de desarrollo
-Rocio Guisell López Espinoza
-Johnjairon Omar Martínez Morales
-Pablo José Ramírez Rac
-Kesdy Aaron Melgar Orellana
+# Equipo de desarrollo
+- Johnjairon Omar Martínez Morales
+- Pablo José Ramírez Rac
+- Kesdy Aaron Melgar Orellana
+- Rocio Guisell López Espinoza
