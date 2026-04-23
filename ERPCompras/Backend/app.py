@@ -21,6 +21,10 @@ CORS(app, supports_credentials=True)
 
 # Configuración de archivo de usuarios
 USERS_FILE = os.path.join(os.path.dirname(__file__), '../data/users.json')
+INVENTORY_FILE = os.path.join(os.path.dirname(__file__), '../data/inventario.json')
+ALERTS_FILE = os.path.join(os.path.dirname(__file__), '../data/alertas_inventario.json')
+PURCHASE_REQUESTS_FILE = os.path.join(os.path.dirname(__file__), '../data/solicitudes_compra.json')
+NOTIFICATIONS_FILE = os.path.join(os.path.dirname(__file__), '../data/notificaciones.json')
 
 def ensure_users_file():
     """Asegura que existe el archivo de usuarios"""
@@ -43,6 +47,124 @@ def write_users(users):
     ensure_users_file()
     with open(USERS_FILE, 'w') as f:
         json.dump(users, f, indent=2)
+
+def ensure_json_file(file_path, default_value):
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    if not os.path.exists(file_path):
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(default_value, f, indent=2, ensure_ascii=False)
+
+def read_json_file(file_path, default_value):
+    ensure_json_file(file_path, default_value)
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except:
+        return default_value.copy() if isinstance(default_value, (list, dict)) else default_value
+
+def write_json_file(file_path, data):
+    ensure_json_file(file_path, data if isinstance(data, list) else {})
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+def next_id(items):
+    if not items:
+        return 1
+    return max(int(item.get('id', 0)) for item in items) + 1
+
+def read_inventory():
+    return read_json_file(INVENTORY_FILE, [])
+
+def write_inventory(data):
+    write_json_file(INVENTORY_FILE, data)
+
+def read_alertas():
+    return read_json_file(ALERTS_FILE, [])
+
+def write_alertas(data):
+    write_json_file(ALERTS_FILE, data)
+
+def read_solicitudes_compra():
+    return read_json_file(PURCHASE_REQUESTS_FILE, [])
+
+def write_solicitudes_compra(data):
+    write_json_file(PURCHASE_REQUESTS_FILE, data)
+
+def read_notificaciones():
+    return read_json_file(NOTIFICATIONS_FILE, [])
+
+def write_notificaciones(data):
+    write_json_file(NOTIFICATIONS_FILE, data)
+
+def generar_automatizacion_stock_bajo(producto):
+    stock = int(producto.get('stock', 0))
+    stock_minimo = int(producto.get('stock_minimo', 0))
+
+    if stock >= stock_minimo:
+        return
+
+    alertas = read_alertas()
+    solicitudes = read_solicitudes_compra()
+    notificaciones = read_notificaciones()
+
+    alerta_existente = next(
+        (a for a in alertas
+         if int(a.get('producto_id')) == int(producto['id']) and not a.get('resuelta', False)),
+        None
+    )
+
+    solicitud_existente = next(
+        (s for s in solicitudes
+         if int(s.get('producto_id')) == int(producto['id']) and s.get('estado') == 'Pendiente'),
+        None
+    )
+
+    if not alerta_existente:
+        nueva_alerta = {
+            'id': next_id(alertas),
+            'producto_id': producto['id'],
+            'producto': producto['nombre'],
+            'stock_actual': stock,
+            'stock_minimo': stock_minimo,
+            'tipo': 'Stock bajo',
+            'mensaje': f"El producto {producto['nombre']} tiene stock {stock}, por debajo del mínimo {stock_minimo}.",
+            'fecha': datetime.now().isoformat(),
+            'resuelta': False
+        }
+        alertas.append(nueva_alerta)
+        write_alertas(alertas)
+
+    if not solicitud_existente:
+        cantidad_sugerida = max((stock_minimo * 2) - stock, 1)
+
+        nueva_solicitud = {
+            'id': next_id(solicitudes),
+            'producto_id': producto['id'],
+            'producto': producto['nombre'],
+            'proveedor': producto.get('proveedor', 'Proveedor no definido'),
+            'cantidad_sugerida': cantidad_sugerida,
+            'estado': 'Pendiente',
+            'motivo': 'Generada automáticamente por stock bajo',
+            'fecha_creacion': datetime.now().isoformat()
+        }
+        solicitudes.append(nueva_solicitud)
+        write_solicitudes_compra(solicitudes)
+
+        nueva_notificacion = {
+            'id': next_id(notificaciones),
+            'destinatario_rol': 'jefe_compras',
+            'producto_id': producto['id'],
+            'mensaje': f"Se generó una solicitud de compra pendiente para {producto['nombre']} por stock bajo.",
+            'fecha': datetime.now().isoformat(),
+            'leida': False
+        }
+        notificaciones.append(nueva_notificacion)
+        write_notificaciones(notificaciones)
+
+def revisar_inventario_completo():
+    productos = read_inventory()
+    for producto in productos:
+        generar_automatizacion_stock_bajo(producto)
 
 def hash_password(password, salt):
     """Cifra contraseña con salt"""
@@ -275,6 +397,79 @@ def ordenes():
         'solicitudes_aprobadas': solicitudes_aprobadas,
         'ordenes': ordenes_data
     })
+
+@app.route('/inventario', methods=['GET'])
+def inventario():
+    revisar_inventario_completo()
+    return jsonify(read_inventory())
+
+@app.route('/inventario/ajustar-stock', methods=['POST'])
+def ajustar_stock():
+    data = request.get_json() or {}
+    producto_id = data.get('producto_id')
+    nuevo_stock = data.get('stock')
+
+    if producto_id is None or nuevo_stock is None:
+        return jsonify({'error': 'producto_id y stock son requeridos'}), 400
+
+    productos = read_inventory()
+    producto = next((p for p in productos if int(p['id']) == int(producto_id)), None)
+
+    if not producto:
+        return jsonify({'error': 'Producto no encontrado'}), 404
+
+    producto['stock'] = int(nuevo_stock)
+    producto['ultima_actualizacion'] = datetime.now().isoformat()
+
+    write_inventory(productos)
+    generar_automatizacion_stock_bajo(producto)
+
+    return jsonify({
+        'mensaje': 'Stock actualizado correctamente',
+        'producto': producto
+    })
+
+@app.route('/inventario/configurar-minimo', methods=['POST'])
+def configurar_minimo():
+    data = request.get_json() or {}
+    producto_id = data.get('producto_id')
+    nuevo_minimo = data.get('stock_minimo')
+
+    if producto_id is None or nuevo_minimo is None:
+        return jsonify({'error': 'producto_id y stock_minimo son requeridos'}), 400
+
+    productos = read_inventory()
+    producto = next((p for p in productos if int(p['id']) == int(producto_id)), None)
+
+    if not producto:
+        return jsonify({'error': 'Producto no encontrado'}), 404
+
+    producto['stock_minimo'] = int(nuevo_minimo)
+    producto['ultima_actualizacion'] = datetime.now().isoformat()
+
+    write_inventory(productos)
+    generar_automatizacion_stock_bajo(producto)
+
+    return jsonify({
+        'mensaje': 'Nivel mínimo actualizado correctamente',
+        'producto': producto
+    })
+
+@app.route('/alertas-inventario', methods=['GET'])
+def alertas_inventario():
+    return jsonify(read_alertas())
+
+@app.route('/solicitudes-compra', methods=['GET'])
+def solicitudes_compra():
+    return jsonify(read_solicitudes_compra())
+
+@app.route('/notificaciones/jefe-compras', methods=['GET'])
+def notificaciones_jefe_compras():
+    notificaciones = [
+        n for n in read_notificaciones()
+        if n.get('destinatario_rol') == 'jefe_compras'
+    ]
+    return jsonify(notificaciones)
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=5000)
