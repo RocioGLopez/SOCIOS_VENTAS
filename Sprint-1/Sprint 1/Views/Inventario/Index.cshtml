@@ -1,0 +1,159 @@
+﻿@model PrototipoCompras.Models.InventarioIndexViewModel
+
+@{
+    ViewData["Title"] = "Inventario";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Inventario</h2>
+        <p class="text-muted mb-0">Administra stock, mínimos y automatización de compras.</p>
+    </div>
+</div>
+
+@if (TempData["Ok"] != null)
+{
+    <div class="alert alert-success">@TempData["Ok"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        Productos
+    </div>
+    <div class="card-body table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Proveedor</th>
+                    <th>Stock</th>
+                    <th>Mínimo</th>
+                    <th>Estado</th>
+                    <th>Actualizar stock</th>
+                    <th>Configurar mínimo</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Productos)
+                {
+                    <tr class="@(item.Stock < item.StockMinimo ? "table-danger" : "")">
+                        <td>@item.Nombre</td>
+                        <td>@item.Proveedor</td>
+                        <td>@item.Stock</td>
+                        <td>@item.StockMinimo</td>
+                        <td>
+                            @if (item.Stock < item.StockMinimo)
+                            {
+                                <span class="badge bg-danger">Stock bajo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Normal</span>
+                            }
+                        </td>
+                        <td>
+                            <form asp-action="ActualizarStock" method="post" class="d-flex gap-2">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <input type="number" name="stock" value="@item.Stock" min="0" class="form-control form-control-sm" style="width:110px;" />
+                                <button type="submit" class="btn btn-sm btn-primary">Guardar</button>
+                            </form>
+                        </td>
+                        <td>
+                            <form asp-action="ConfigurarMinimo" method="post" class="d-flex gap-2">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <input type="number" name="stockMinimo" value="@item.StockMinimo" min="0" class="form-control form-control-sm" style="width:110px;" />
+                                <button type="submit" class="btn btn-sm btn-secondary">Guardar</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-danger text-white">
+                Alertas activas
+            </div>
+            <div class="card-body">
+                @if (Model.Alertas.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var alerta in Model.Alertas)
+                        {
+                            <li class="list-group-item">
+                                <strong>@alerta.Producto</strong><br />
+                                <small>@alerta.Mensaje</small>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No hay alertas activas.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-warning">
+                Solicitudes automáticas pendientes
+            </div>
+            <div class="card-body">
+                @if (Model.SolicitudesPendientes.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var solicitud in Model.SolicitudesPendientes)
+                        {
+                            <li class="list-group-item">
+                                <strong>@solicitud.Producto</strong><br />
+                                <small>Cantidad: @solicitud.Cantidad | Estado: @solicitud.Estado</small>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No hay solicitudes automáticas pendientes.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-info text-white">
+                Notificaciones al jefe
+            </div>
+            <div class="card-body">
+                @if (Model.Notificaciones.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var notificacion in Model.Notificaciones)
+                        {
+                            <li class="list-group-item">
+                                <small>@notificacion.Mensaje</small>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No hay notificaciones registradas.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

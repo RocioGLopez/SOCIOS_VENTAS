@@ -25,4 +25,8 @@ public class SolicitudCompra
     public string Solicitante { get; set; } = "";
 
     public DateTime CreadoEn { get; set; } = DateTime.UtcNow;
+
+    public bool GeneradaAutomaticamente { get; set; } = false;
+
+    public int? InventarioProductoId { get; set; }
 }
