@@ -6,11 +6,23 @@ Proyecto de desarrollo de sistemas web orientado a la gestión de compras dentro
 El sistema permite mejorar la organización de la información, reducir errores en los procesos manuales y facilitar la toma de decisiones mediante el acceso a datos estructurados y reportes.
 
 ## Funcionalidades principales
--Registro de solicitudes de compra
--Evaluación de proveedores
--Control de contratos con alertas de vencimiento
--Generación de órdenes de compra a partir de solicitudes aprobadas
--Consulta de historial de compras con filtros
--Exportación de reportes en formato Excel y PDF
+- Registro de solicitudes de compra
+- Evaluación de proveedores
+- Control de contratos con alertas de vencimiento
+- Generación de órdenes de compra a partir de solicitudes aprobadas
+- Consulta de historial de compras con filtros
+- Exportación de reportes en formato Excel y PDF
 
 ### Tecnologías utilizadas
+- Tecnologías utilizadas
+- Backend: C#
+- Frontend: HTML, CSS, JavaScript, Vue.js
+- Base de datos: MySQL
+- Herramientas: Visual Studio, Visual Studio Code
+- Control de versiones: GitHub
+
+- # Equipo de desarrollo
+Rocio Guisell López Espinoza
+Johnjairon Omar Martínez Morales
+Pablo José Ramírez Rac
+Kesdy Aaron Melgar Orellana
