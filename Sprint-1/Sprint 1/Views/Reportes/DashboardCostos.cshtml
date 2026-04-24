@@ -1,0 +1,183 @@
+﻿@model PrototipoCompras.Models.DashboardCostosViewModel
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Dashboard KPIs - Costos";
+}
+
+<div class="mb-4">
+    <h2 class="fw-bold">📊 Dashboard KPIs - Análisis de Costos</h2>
+    <p class="text-muted mb-0">Comparativo de precios entre proveedores por producto.</p>
+</div>
+
+<form method="get" asp-controller="Reportes" asp-action="DashboardCostos" class="card shadow-sm p-4 mb-4" onsubmit="return validarSeleccion()">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Producto</label>
+            <select name="productoSeleccionado" class="form-select" required>
+                <option value="">Seleccione un producto</option>
+                @foreach (var producto in Model.ProductosDisponibles)
+                {
+                    <option value="@producto" selected="@(Model.ProductoSeleccionado == producto ? "selected" : null)">
+                        @producto
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-5">
+            <label class="form-label">Proveedores (mínimo 2)</label>
+            <select id="proveedoresSeleccionados" name="proveedoresSeleccionados" class="form-select" multiple size="5" required>
+                @foreach (var proveedor in Model.ProveedoresDisponibles)
+                {
+                    <option value="@proveedor" selected="@(Model.ProveedoresSeleccionados.Contains(proveedor) ? "selected" : null)">
+                        @proveedor
+                    </option>
+                }
+            </select>
+            <small class="text-muted">Mantén Ctrl presionado para seleccionar varios.</small>
+        </div>
+
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Generar reporte</button>
+        </div>
+    </div>
+</form>
+
+@if (!string.IsNullOrWhiteSpace(Model.Error))
+{
+    <div class="alert alert-danger">@Model.Error</div>
+}
+
+@if (Model.TiempoMs > 0)
+{
+    <div class="alert @(Model.TiempoMs <= 4000 ? "alert-success" : "alert-warning")">
+        Tiempo de generación: <strong>@Model.TiempoMs ms</strong>
+    </div>
+}
+
+@if (Model.Comparativos.Any())
+{
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-start border-4 border-success">
+                <div class="card-body">
+                    <h6 class="text-muted">Proveedor más rentable</h6>
+                    <h4 class="mb-1">@Model.MejorProveedor</h4>
+                    <div class="text-success fw-bold">Q @Model.MejorPrecio.ToString("N2")</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-start border-4 border-primary">
+                <div class="card-body">
+                    <h6 class="text-muted">Promedio histórico general</h6>
+                    <h4 class="mb-1">Q @Model.PromedioGeneralHistorico.ToString("N2")</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-start border-4 border-warning">
+                <div class="card-body">
+                    <h6 class="text-muted">Brecha actual entre proveedores</h6>
+                    <h4 class="mb-1">Q @Model.DiferenciaMaxMinActual.ToString("N2")</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            Comparativo por proveedor
+        </div>
+        <div class="card-body table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Proveedor</th>
+                        <th>Precio actual</th>
+                        <th>Promedio histórico</th>
+                        <th>Diferencia vs promedio</th>
+                        <th>Última referencia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Comparativos)
+                    {
+                        <tr>
+                            <td>@item.Proveedor</td>
+                            <td>Q @item.PrecioActual.ToString("N2")</td>
+                            <td>Q @item.PromedioHistorico.ToString("N2")</td>
+                            <td class="@(item.DiferenciaVsPromedio <= 0 ? "text-success" : "text-danger")">
+                                Q @item.DiferenciaVsPromedio.ToString("N2")
+                            </td>
+                            <td>@item.UltimaFecha.ToString("dd/MM/yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            Gráfico comparativo
+        </div>
+        <div class="card-body">
+            <canvas id="graficoCostos" height="120"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = @Html.Raw(JsonSerializer.Serialize(Model.Comparativos.Select(x => x.Proveedor)));
+        const preciosActuales = @Html.Raw(JsonSerializer.Serialize(Model.Comparativos.Select(x => x.PrecioActual)));
+        const promediosHistoricos = @Html.Raw(JsonSerializer.Serialize(Model.Comparativos.Select(x => x.PromedioHistorico)));
+
+        const ctx = document.getElementById('graficoCostos');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Precio actual',
+                        data: preciosActuales
+                    },
+                    {
+                        label: 'Promedio histórico',
+                        data: promediosHistoricos
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        function validarSeleccion() {
+            const select = document.getElementById('proveedoresSeleccionados');
+            const seleccionados = Array.from(select.options).filter(o => o.selected).length;
+
+            if (seleccionados < 2) {
+                alert('Debes seleccionar al menos dos proveedores.');
+                return false;
+            }
+            return true;
+        }
+    </script>
+}
+else if (Model.ProductoSeleccionado != null)
+{
+    <div class="alert alert-info">No hay datos suficientes para mostrar el comparativo.</div>
+}
