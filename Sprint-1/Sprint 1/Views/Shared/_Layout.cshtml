@@ -116,7 +116,8 @@
             <div class="brand">
                 @if (User?.Identity?.IsAuthenticated == true)
                 {
-                    <h1>Bienvenido, @User.Identity.Name</h1>
+                    var fullName = ((System.Security.Claims.ClaimsIdentity)User.Identity).Claims.FirstOrDefault(c => c.Type == "FullName")?.Value;
+                    <h1>Bienvenido, @(string.IsNullOrWhiteSpace(fullName) ? User.Identity.Name : fullName)</h1>
                 }
                 else
                 {
