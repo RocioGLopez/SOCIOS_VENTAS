@@ -28,6 +28,36 @@ public class AppDbContext : DbContext
             new Proveedor { Id = 3, Nombre = "Distribuidora Central" }
         );
 
+        modelBuilder.Entity<InventarioProducto>().HasData(
+            new InventarioProducto
+            {
+                Id = 1,
+                Nombre = "Laptop Dell",
+                Proveedor = "TechSupply S.A.",
+                Stock = 10,
+                StockMinimo = 5,
+                UltimaActualizacion = new DateTime(2026, 4, 23, 0, 0, 0, DateTimeKind.Utc)
+            },
+            new InventarioProducto
+            {
+                Id = 2,
+                Nombre = "Sillas de oficina",
+                Proveedor = "OfiMundo",
+                Stock = 8,
+                StockMinimo = 4,
+                UltimaActualizacion = new DateTime(2026, 4, 23, 0, 0, 0, DateTimeKind.Utc)
+            },
+            new InventarioProducto
+            {
+                Id = 3,
+                Nombre = "Monitor LG",
+                Proveedor = "Distribuidora Central",
+                Stock = 6,
+                StockMinimo = 3,
+                UltimaActualizacion = new DateTime(2026, 4, 23, 0, 0, 0, DateTimeKind.Utc)
+            }
+        );
+
         modelBuilder.Entity<CostoProveedorHistorico>()
             .HasIndex(c => new { c.Producto, c.Proveedor, c.FechaRegistro });
 
