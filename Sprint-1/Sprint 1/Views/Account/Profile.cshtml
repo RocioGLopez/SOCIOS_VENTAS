@@ -106,6 +106,15 @@
         background-color: #1a295a;
     }
 
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+
     @@media (max-width: 768px) {
         .profile-container {
             padding: 20px;
@@ -199,7 +208,12 @@
 
         <div class="form-actions">
             <button type="submit" class="btn-primary">Actualizar</button>
-            <a href="/" class="btn-secondary">Volver</a>
+            <a href="/Solicitudes/Create" class="btn-secondary">Volver</a>
+            <button type="button" class="btn-danger" onclick="document.getElementById('logoutForm').submit();">Cerrar sesión</button>
         </div>
+    </form>
+
+    <form id="logoutForm" asp-controller="Account" asp-action="Logout" method="post" style="display:none;">
+        @Html.AntiForgeryToken()
     </form>
 </div>
