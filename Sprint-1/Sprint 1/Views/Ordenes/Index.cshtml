@@ -1,212 +1,98 @@
+@model List<PrototipoCompras.Models.OrdenCompra>
+
 @{
     ViewData["Title"] = "Órdenes de Compra";
 }
 
-<h2 class="mt-4">🛒 Órdenes de Compra</h2>
-
-<!-- Mensaje error/info -->
-<div id="mensaje" class="alert d-none"></div>
-
-<!-- Solicitudes Aprobadas -->
-<div class="card mb-4">
-    <div class="card-header table-dark" style="color:black;">
-        <strong>📋 Solicitudes Aprobadas — Listas para convertir en Orden </strong>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Órdenes de Compra</h2>
+        <p class="text-muted mb-0">Solo las órdenes en estado Recibida actualizan inventario.</p>
     </div>
-    <div class="card-body p-0">
-        <table class="table table-hover mb-0">
-            <thead class="table-secondary">
+</div>
+
+@if (TempData["Ok"] != null)
+{
+    <div class="alert alert-success">@TempData["Ok"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        Lista de órdenes
+    </div>
+    <div class="card-body table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Número</th>
                     <th>Producto</th>
+                    <th>Proveedor</th>
                     <th>Cantidad</th>
-                    <th>Solicitante</th>
+                    <th>Estado</th>
+                    <th>Fecha creación</th>
+                    <th>Fecha recepción</th>
+                    <th>Usuario recepción</th>
                     <th>Acción</th>
                 </tr>
             </thead>
-            <tbody id="cuerpo-solicitudes"></tbody>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Id</td>
+                            <td>@item.NumeroOrden</td>
+                            <td>@item.Producto</td>
+                            <td>@item.Proveedor</td>
+                            <td>@item.Cantidad</td>
+                            <td>
+                                @if (item.Estado == "Recibida")
+                                {
+                                    <span class="badge bg-success">Recibida</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@item.Estado</span>
+                                }
+                            </td>
+                            <td>@item.FechaCreacion.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@(item.FechaRecepcion.HasValue? item.FechaRecepcion.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                            <td>@(string.IsNullOrWhiteSpace(item.UsuarioRecepcion) ? "-" : item.UsuarioRecepcion)</td>
+                            <td>
+                                @if (item.Estado != "Recibida")
+                                {
+                                    <form asp-action="MarcarRecibida" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            Marcar como recibida
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-outline-secondary" disabled>
+                                        Ya recibida
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="10" class="text-center text-muted">No hay órdenes registradas.</td>
+                    </tr>
+                }
+            </tbody>
         </table>
     </div>
 </div>
-
-<!-- Modal generar orden -->
-<div id="modal-orden" class="card p-4 mb-4 border-primary d-none">
-    <h5>📝 Generar Orden de Compra</h5>
-    <input type="hidden" id="solicitud-id" />
-    <div class="row g-3">
-        <div class="col-md-4">
-            <label>Número de Orden</label>
-            <input type="text" id="numero-orden" class="form-control" readonly />
-        </div>
-        <div class="col-md-4">
-            <label>Producto</label>
-            <input type="text" id="orden-producto" class="form-control" readonly />
-        </div>
-        <div class="col-md-4">
-            <label>Cantidad</label>
-            <input type="number" id="orden-cantidad" class="form-control" readonly />
-        </div>
-        <div class="col-md-4">
-            <label>Proveedor</label>
-            <input type="text" id="orden-proveedor" class="form-control" placeholder="Nombre del proveedor" />
-        </div>
-        <div class="col-md-4">
-            <label>Monto Total (Q)</label>
-            <input type="number" id="orden-monto" class="form-control" placeholder="0.00" />
-        </div>
-        <div class="col-md-4">
-            <label>Estado</label>
-            <input type="text" id="orden-estado" class="form-control" value="Emitida" readonly />
-        </div>
-    </div>
-    <div class="mt-3">
-        <button class="btn btn-success" onclick="confirmarOrden()">✅ Confirmar Orden</button>
-        <button class="btn btn-secondary ms-2" onclick="cancelarOrden()">Cancelar</button>
-    </div>
-</div>
-
-<!-- Órdenes generadas -->
-<div class="card">
-    <div class="card-header table-dark text-white">
-        <strong>📦 Órdenes de Compra Generadas</strong>
-    </div>
-    <div class="card-body p-0">
-        <table class="table table-bordered table-hover mb-0" id="tabla-ordenes">
-            <thead class="table-secondary">
-                <tr>
-                    <th>N° Orden</th>
-                    <th>Proveedor</th>
-                    <th>Producto</th>
-                    <th>Cantidad</th>
-                    <th>Monto</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody id="cuerpo-ordenes"></tbody>
-        </table>
-        <div id="sin-ordenes" class="text-center p-4 d-none">
-            <p class="text-muted">📭 No hay órdenes generadas aún</p>
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-<script>
-    const API_URL = 'http://127.0.0.1:5000/ordenes';
-    let solicitudes = [];
-    let ordenes = [];
-    let contadorOrdenes = 0;
-    let solicitudSeleccionada = null;
-
-    async function cargarDatos() {
-        const msg = document.getElementById('mensaje');
-        try {
-            const res = await fetch(API_URL);
-            if (!res.ok) throw new Error('Error');
-            const datos = await res.json();
-            solicitudes = datos.solicitudes_aprobadas;
-            ordenes = datos.ordenes;
-            contadorOrdenes = ordenes.length;
-            renderSolicitudes();
-            renderOrdenes();
-        } catch (e) {
-            msg.className = 'alert alert-danger';
-            msg.textContent = '⚠️ No se pudo conectar al servidor.';
-        }
-    }
-
-    function renderSolicitudes() {
-        const tbody = document.getElementById('cuerpo-solicitudes');
-        tbody.innerHTML = '';
-        solicitudes.forEach(s => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>${s.id}</td>
-                    <td>${s.producto}</td>
-                    <td>${s.cantidad}</td>
-                    <td>${s.solicitante}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" onclick="abrirModal(${s.id})">
-                            🛒 Generar Orden
-                        </button>
-                    </td>
-                </tr>`;
-        });
-    }
-
-    function renderOrdenes() {
-        const tbody = document.getElementById('cuerpo-ordenes');
-        const sinOrdenes = document.getElementById('sin-ordenes');
-        tbody.innerHTML = '';
-
-        if (ordenes.length === 0) {
-            sinOrdenes.classList.remove('d-none');
-            return;
-        }
-
-        sinOrdenes.classList.add('d-none');
-        ordenes.forEach(o => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>${o.numero}</td>
-                    <td>${o.proveedor}</td>
-                    <td>${o.producto}</td>
-                    <td>${o.cantidad}</td>
-                    <td>Q ${parseFloat(o.monto).toFixed(2)}</td>
-                    <td><span class="badge bg-primary">${o.estado}</span></td>
-                </tr>`;
-        });
-    }
-
-    function abrirModal(solicitudId) {
-        solicitudSeleccionada = solicitudes.find(s => s.id === solicitudId);
-        if (!solicitudSeleccionada) return;
-
-        // Número único automático (Criterio 4)
-        contadorOrdenes++;
-        const numero = 'ORD-' + String(contadorOrdenes).padStart(4, '0');
-
-        document.getElementById('numero-orden').value = numero;
-        document.getElementById('orden-producto').value = solicitudSeleccionada.producto;
-        document.getElementById('orden-cantidad').value = solicitudSeleccionada.cantidad;
-        document.getElementById('orden-proveedor').value = '';
-        document.getElementById('orden-monto').value = '';
-        document.getElementById('modal-orden').classList.remove('d-none');
-    }
-
-    function cancelarOrden() {
-        contadorOrdenes--;
-        document.getElementById('modal-orden').classList.add('d-none');
-    }
-
-    function confirmarOrden() {
-        const proveedor = document.getElementById('orden-proveedor').value;
-        const monto = document.getElementById('orden-monto').value;
-
-        if (!proveedor || !monto) {
-            alert('Por favor complete el proveedor y el monto.');
-            return;
-        }
-
-        const nuevaOrden = {
-            id: ordenes.length + 1,
-            numero: document.getElementById('numero-orden').value,
-            proveedor,
-            producto: solicitudSeleccionada.producto,
-            cantidad: solicitudSeleccionada.cantidad,
-            monto: parseFloat(monto),
-            estado: 'Emitida'  // Criterio 3
-        };
-
-        ordenes.push(nuevaOrden);
-
-        // Remover solicitud usada (Criterio 1)
-        solicitudes = solicitudes.filter(s => s.id !== solicitudSeleccionada.id);
-
-        renderSolicitudes();
-        renderOrdenes();
-        document.getElementById('modal-orden').classList.add('d-none');
-    }
-
-    cargarDatos();
-</script>
-}

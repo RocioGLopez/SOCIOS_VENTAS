@@ -10,13 +10,11 @@ public class SolicitudesController : Controller
     private readonly AppDbContext _db;
     public SolicitudesController(AppDbContext db) => _db = db;
 
-    // GET: /Solicitudes/Create
     public IActionResult Create()
     {
         return View(new SolicitudCompra { Fecha = DateTime.Today });
     }
 
-    // POST: /Solicitudes/Create
     [HttpPost]
     public async Task<IActionResult> Create(SolicitudCompra model)
     {
@@ -30,6 +28,12 @@ public class SolicitudesController : Controller
         if (string.IsNullOrWhiteSpace(model.Solicitante))
             model.Solicitante = "EmpleadoDemo";
 
+        model.GeneradaAutomaticamente = false;
+
+        var productoInventario = await BuscarProductoInventarioAsync(model.Producto);
+        if (productoInventario != null)
+            model.InventarioProductoId = productoInventario.Id;
+
         _db.Solicitudes.Add(model);
         await _db.SaveChangesAsync();
 
@@ -37,7 +41,6 @@ public class SolicitudesController : Controller
         return View("Success", model);
     }
 
-    // Panel del jefe: mostrar solo solicitudes pendientes
     public IActionResult BossPanel()
     {
         var list = _db.Solicitudes
@@ -48,7 +51,6 @@ public class SolicitudesController : Controller
         return View(list);
     }
 
-    // Aprobar solicitud
     public async Task<IActionResult> Approve(int id)
     {
         var s = await _db.Solicitudes.FirstOrDefaultAsync(x => x.Id == id);
@@ -61,43 +63,44 @@ public class SolicitudesController : Controller
 
         s.Estado = "Aprobada";
 
-        // Si la solicitud fue generada automáticamente por inventario,
-        // al aprobarla también se repone el stock.
-        if (s.GeneradaAutomaticamente && s.InventarioProductoId.HasValue)
+        InventarioProducto? producto = null;
+
+        if (s.InventarioProductoId.HasValue)
         {
-            var producto = await _db.InventarioProductos
+            producto = await _db.InventarioProductos
                 .FirstOrDefaultAsync(p => p.Id == s.InventarioProductoId.Value);
+        }
 
-            if (producto != null)
+        if (producto == null)
+        {
+            producto = await BuscarProductoInventarioAsync(s.Producto);
+
+            if (producto != null && !s.InventarioProductoId.HasValue)
+                s.InventarioProductoId = producto.Id;
+        }
+
+        var existeOrden = await _db.OrdenesCompra
+            .AnyAsync(o => o.SolicitudCompraId == s.Id);
+
+        if (!existeOrden)
+        {
+            _db.OrdenesCompra.Add(new OrdenCompra
             {
-                producto.Stock += s.Cantidad;
-                producto.UltimaActualizacion = DateTime.UtcNow;
-
-                // Si el stock ya quedó normal, cerrar alertas y notificaciones
-                if (producto.Stock >= producto.StockMinimo)
-                {
-                    var alertas = await _db.AlertasInventario
-                        .Where(a => a.InventarioProductoId == producto.Id && !a.Resuelta)
-                        .ToListAsync();
-
-                    foreach (var alerta in alertas)
-                        alerta.Resuelta = true;
-
-                    var notificaciones = await _db.NotificacionesCompra
-                        .Where(n => n.InventarioProductoId == producto.Id && !n.Leida)
-                        .ToListAsync();
-
-                    foreach (var notificacion in notificaciones)
-                        notificacion.Leida = true;
-                }
-            }
+                NumeroOrden = $"OC-{DateTime.UtcNow:yyyyMMddHHmmss}-{s.Id}",
+                Producto = s.Producto,
+                Cantidad = s.Cantidad,
+                Proveedor = producto?.Proveedor ?? "Proveedor pendiente",
+                Estado = "Emitida",
+                FechaCreacion = DateTime.UtcNow,
+                InventarioProductoId = producto?.Id,
+                SolicitudCompraId = s.Id
+            });
         }
 
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(BossPanel));
     }
 
-    // Rechazar solicitud
     public async Task<IActionResult> Reject(int id)
     {
         var s = await _db.Solicitudes.FirstOrDefaultAsync(x => x.Id == id);
@@ -112,5 +115,16 @@ public class SolicitudesController : Controller
 
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(BossPanel));
+    }
+
+    private async Task<InventarioProducto?> BuscarProductoInventarioAsync(string nombreProducto)
+    {
+        if (string.IsNullOrWhiteSpace(nombreProducto))
+            return null;
+
+        var nombreBuscado = nombreProducto.Trim().ToLower();
+
+        return await _db.InventarioProductos
+            .FirstOrDefaultAsync(p => p.Nombre.ToLower() == nombreBuscado);
     }
 }

@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<InventarioProducto> InventarioProductos => Set<InventarioProducto>();
     public DbSet<AlertaInventario> AlertasInventario => Set<AlertaInventario>();
     public DbSet<NotificacionCompra> NotificacionesCompra => Set<NotificacionCompra>();
+    public DbSet<OrdenCompra> OrdenesCompra => Set<OrdenCompra>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
