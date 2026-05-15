@@ -2,13 +2,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PrototipoCompras.Data;
 using PrototipoCompras.Models;
+using PrototipoCompras.Services;
 
 namespace PrototipoCompras.Controllers;
 
 public class ProveedoresController : Controller
 {
     private readonly AppDbContext _db;
-    public ProveedoresController(AppDbContext db) => _db = db;
+    private readonly IBitacoraService _bitacora;
+
+    public ProveedoresController(AppDbContext db, IBitacoraService bitacora)
+    {
+        _db = db;
+        _bitacora = bitacora;
+    }
 
     // GET: /Proveedores/CreateEval
     public IActionResult CreateEval()
@@ -36,6 +43,12 @@ public class ProveedoresController : Controller
 
         _db.Evaluaciones.Add(model);
         await _db.SaveChangesAsync();
+
+        await _bitacora.RegistrarAsync(
+            "Proveedores",
+            "Registrar evaluación",
+            $"ProveedorId: {model.ProveedorId}, score: {model.Score}, evaluador: {model.Evaluador}",
+            model.Id);
 
         TempData["TiempoMs"] = (int)Math.Round((DateTime.UtcNow - start).TotalMilliseconds);
         return RedirectToAction(nameof(History));

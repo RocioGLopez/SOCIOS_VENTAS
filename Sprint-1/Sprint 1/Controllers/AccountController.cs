@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using PrototipoCompras.Models;
+using PrototipoCompras.Services;
 using System.Text.Json;
 using System.Security.Cryptography;
 using System.Text;
@@ -11,6 +12,13 @@ namespace PrototipoCompras.Controllers;
 
 public class AccountController : Controller
 {
+    private readonly IBitacoraService _bitacora;
+
+    public AccountController(IBitacoraService bitacora)
+    {
+        _bitacora = bitacora;
+    }
+
     private string GetUsersFilePath()
     {
         var dir = Path.Combine(AppContext.BaseDirectory, "App_Data");
@@ -64,6 +72,13 @@ public class AccountController : Controller
         var user = users.FirstOrDefault(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
         if (user == null)
         {
+            await _bitacora.RegistrarAsync(
+                "Cuenta",
+                "Inicio de sesion fallido",
+                "Correo no registrado.",
+                exitoso: false,
+                usuarioOverride: email);
+
             ModelState.AddModelError(string.Empty, "No existe una cuenta con ese correo.");
             ViewData["Email"] = email;
             return View();
@@ -72,6 +87,13 @@ public class AccountController : Controller
         var hash = HashPassword(password ?? string.Empty, user.Salt);
         if (!hash.Equals(user.PasswordHash, StringComparison.OrdinalIgnoreCase))
         {
+            await _bitacora.RegistrarAsync(
+                "Cuenta",
+                "Inicio de sesion fallido",
+                "Contrasena incorrecta.",
+                exitoso: false,
+                usuarioOverride: email);
+
             ModelState.AddModelError(string.Empty, "Contraseña incorrecta.");
             ViewData["Email"] = email;
             return View();
@@ -88,6 +110,13 @@ public class AccountController : Controller
         var principal = new ClaimsPrincipal(identity);
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+        await _bitacora.RegistrarAsync(
+            "Cuenta",
+            "Inicio de sesion",
+            $"Usuario autenticado: {user.Email}.",
+            usuarioOverride: user.Email);
+
         return RedirectToAction("Create", "Solicitudes");
     }
 
@@ -139,6 +168,12 @@ public class AccountController : Controller
         users.Add(user);
         WriteUsers(users);
 
+        await _bitacora.RegistrarAsync(
+            "Cuenta",
+            "Registro de usuario",
+            $"Nueva cuenta: {user.Email}.",
+            usuarioOverride: user.Email);
+
         // sign-in after register
         var claims = new List<Claim>
         {
@@ -157,7 +192,15 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
+        var email = User?.Identity?.Name;
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        await _bitacora.RegistrarAsync(
+            "Cuenta",
+            "Cierre de sesion",
+            "Sesion finalizada.",
+            usuarioOverride: email ?? "Desconocido");
+
         return RedirectToAction("Login", "Account");
     }
 
@@ -169,7 +212,7 @@ public class AccountController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult RecoverPassword(string email, string nueva_password, string confirmar_password)
+    public async Task<IActionResult> RecoverPassword(string email, string nueva_password, string confirmar_password)
     {
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(nueva_password) || string.IsNullOrWhiteSpace(confirmar_password))
         {
@@ -207,6 +250,12 @@ public class AccountController : Controller
 
         WriteUsers(users);
 
+        await _bitacora.RegistrarAsync(
+            "Cuenta",
+            "Recuperar contrasena",
+            $"Contrasena restablecida para {user.Email}.",
+            usuarioOverride: user.Email);
+
         ViewData["SuccessMessage"] = "Contraseña actualizada exitosamente. Por favor, inicia sesión con tu nueva contraseña.";
         return View();
     }
@@ -233,7 +282,7 @@ public class AccountController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Profile(string nombres, string apellidos, string telefono, string direccion, string nacimiento, string new_password, string confirm_password)
+    public async Task<IActionResult> Profile(string nombres, string apellidos, string telefono, string direccion, string nacimiento, string new_password, string confirm_password)
     {
         if (!User?.Identity?.IsAuthenticated == true)
         {
@@ -281,6 +330,11 @@ public class AccountController : Controller
         }
 
         WriteUsers(users);
+
+        await _bitacora.RegistrarAsync(
+            "Cuenta",
+            "Actualizar perfil",
+            $"Perfil actualizado para {user.Email}.");
 
         TempData["SuccessMessage"] = "Datos actualizados exitosamente.";
         return RedirectToAction("Profile");

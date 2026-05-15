@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PrototipoCompras.Data;
 using PrototipoCompras.Models;
+using PrototipoCompras.Services;
 
 namespace PrototipoCompras.Controllers;
 
@@ -10,10 +11,12 @@ namespace PrototipoCompras.Controllers;
 public class InventarioController : Controller
 {
     private readonly AppDbContext _db;
+    private readonly IBitacoraService _bitacora;
 
-    public InventarioController(AppDbContext db)
+    public InventarioController(AppDbContext db, IBitacoraService bitacora)
     {
         _db = db;
+        _bitacora = bitacora;
     }
 
     public async Task<IActionResult> Index()
@@ -70,6 +73,12 @@ public class InventarioController : Controller
         await VerificarStockBajoAsync(producto);
         await _db.SaveChangesAsync();
 
+        await _bitacora.RegistrarAsync(
+            "Inventario",
+            "Actualizar stock",
+            $"Producto {producto.Nombre} (Id {producto.Id}): stock = {stock}.",
+            producto.Id);
+
         TempData["Ok"] = "Stock actualizado correctamente.";
         return RedirectToAction(nameof(Index));
     }
@@ -93,6 +102,12 @@ public class InventarioController : Controller
 
         await VerificarStockBajoAsync(producto);
         await _db.SaveChangesAsync();
+
+        await _bitacora.RegistrarAsync(
+            "Inventario",
+            "Configurar stock mínimo",
+            $"Producto {producto.Nombre} (Id {producto.Id}): mínimo = {stockMinimo}.",
+            producto.Id);
 
         TempData["Ok"] = "Nivel mínimo actualizado correctamente.";
         return RedirectToAction(nameof(Index));
