@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using PrototipoCompras.Data;
+using PrototipoCompras.Services;
 
 //Hola me llamo John
 
@@ -9,6 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IBitacoraService, BitacoraService>();
 
 // Add cookie authentication so we can sign-in users from AccountController
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

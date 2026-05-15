@@ -2,13 +2,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PrototipoCompras.Data;
 using PrototipoCompras.Models;
+using PrototipoCompras.Services;
 
 namespace PrototipoCompras.Controllers;
 
 public class SolicitudesController : Controller
 {
     private readonly AppDbContext _db;
-    public SolicitudesController(AppDbContext db) => _db = db;
+    private readonly IBitacoraService _bitacora;
+
+    public SolicitudesController(AppDbContext db, IBitacoraService bitacora)
+    {
+        _db = db;
+        _bitacora = bitacora;
+    }
 
     public IActionResult Create()
     {
@@ -36,6 +43,12 @@ public class SolicitudesController : Controller
 
         _db.Solicitudes.Add(model);
         await _db.SaveChangesAsync();
+
+        await _bitacora.RegistrarAsync(
+            "Solicitudes",
+            "Crear solicitud",
+            $"Producto: {model.Producto}, cantidad: {model.Cantidad}, solicitante: {model.Solicitante}",
+            model.Id);
 
         ViewBag.TiempoMs = (int)Math.Round((DateTime.UtcNow - start).TotalMilliseconds);
         return View("Success", model);
@@ -98,6 +111,13 @@ public class SolicitudesController : Controller
         }
 
         await _db.SaveChangesAsync();
+
+        await _bitacora.RegistrarAsync(
+            "Solicitudes",
+            "Aprobar solicitud",
+            $"Solicitud #{s.Id} aprobada. Producto: {s.Producto}.",
+            s.Id);
+
         return RedirectToAction(nameof(BossPanel));
     }
 
@@ -114,6 +134,13 @@ public class SolicitudesController : Controller
         s.Estado = "Rechazada";
 
         await _db.SaveChangesAsync();
+
+        await _bitacora.RegistrarAsync(
+            "Solicitudes",
+            "Rechazar solicitud",
+            $"Solicitud #{s.Id} rechazada. Producto: {s.Producto}.",
+            s.Id);
+
         return RedirectToAction(nameof(BossPanel));
     }
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PrototipoCompras.Data;
 using PrototipoCompras.Models;
+using PrototipoCompras.Services;
 
 namespace PrototipoCompras.Controllers;
 
@@ -10,10 +11,12 @@ namespace PrototipoCompras.Controllers;
 public class OrdenesController : Controller
 {
     private readonly AppDbContext _db;
+    private readonly IBitacoraService _bitacora;
 
-    public OrdenesController(AppDbContext db)
+    public OrdenesController(AppDbContext db, IBitacoraService bitacora)
     {
         _db = db;
+        _bitacora = bitacora;
     }
 
     public async Task<IActionResult> Index()
@@ -61,7 +64,7 @@ public class OrdenesController : Controller
 
         if (producto == null)
         {
-            TempData["Error"] = "No se encontrÛ el producto en inventario para actualizar stock.";
+            TempData["Error"] = "No se encontrù el producto en inventario para actualizar stock.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -92,7 +95,13 @@ public class OrdenesController : Controller
 
         await _db.SaveChangesAsync();
 
-        TempData["Ok"] = "La orden fue marcada como recibida y el inventario se actualizÛ correctamente.";
+        await _bitacora.RegistrarAsync(
+            "Ordenes",
+            "Marcar orden recibida",
+            $"Orden {orden.NumeroOrden}: +{orden.Cantidad} stock en {producto.Nombre}.",
+            orden.Id);
+
+        TempData["Ok"] = "La orden fue marcada como recibida y el inventario se actualizù correctamente.";
         return RedirectToAction(nameof(Index));
     }
 }

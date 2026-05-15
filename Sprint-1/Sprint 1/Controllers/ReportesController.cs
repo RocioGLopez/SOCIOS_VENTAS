@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PrototipoCompras.Data;
 using PrototipoCompras.Models;
+using PrototipoCompras.Services;
 using System.Diagnostics;
 
 namespace PrototipoCompras.Controllers;
@@ -11,10 +12,12 @@ namespace PrototipoCompras.Controllers;
 public class ReportesController : Controller
 {
     private readonly AppDbContext _db;
+    private readonly IBitacoraService _bitacora;
 
-    public ReportesController(AppDbContext db)
+    public ReportesController(AppDbContext db, IBitacoraService bitacora)
     {
         _db = db;
+        _bitacora = bitacora;
     }
 
     public async Task<IActionResult> DashboardCostos(string? productoSeleccionado, List<string>? proveedoresSeleccionados)
@@ -86,6 +89,14 @@ public class ReportesController : Controller
 
         sw.Stop();
         model.TiempoMs = (int)sw.ElapsedMilliseconds;
+
+        if (!string.IsNullOrWhiteSpace(productoSeleccionado) && model.ProveedoresSeleccionados.Any())
+        {
+            await _bitacora.RegistrarAsync(
+                "Reportes",
+                "Consultar dashboard de costos",
+                $"Producto: {productoSeleccionado}, proveedores: {string.Join(", ", model.ProveedoresSeleccionados)}.");
+        }
 
         return View(model);
     }

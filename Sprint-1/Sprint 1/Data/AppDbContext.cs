@@ -17,6 +17,7 @@ public class AppDbContext : DbContext
     public DbSet<OrdenCompra> OrdenesCompra => Set<OrdenCompra>();
 
     public DbSet<CostoProveedorHistorico> CostosProveedorHistoricos => Set<CostoProveedorHistorico>();
+    public DbSet<Bitacora> Bitacoras => Set<Bitacora>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -57,6 +58,12 @@ public class AppDbContext : DbContext
                 UltimaActualizacion = new DateTime(2026, 4, 23, 0, 0, 0, DateTimeKind.Utc)
             }
         );
+
+        modelBuilder.Entity<Bitacora>()
+            .HasIndex(b => b.Fecha);
+
+        modelBuilder.Entity<Bitacora>()
+            .HasIndex(b => new { b.Modulo, b.Usuario });
 
         modelBuilder.Entity<CostoProveedorHistorico>()
             .HasIndex(c => new { c.Producto, c.Proveedor, c.FechaRegistro });
