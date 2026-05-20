@@ -16,7 +16,7 @@ public class IntegracionContactosController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var contactos = await _service.ObtenerContactosAsync();
-        return View(contactos);
+        var resultado = await _service.ObtenerContactosAsync();
+        return View(resultado);
     }
 }

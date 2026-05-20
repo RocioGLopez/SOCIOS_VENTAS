@@ -4,5 +4,5 @@ namespace PrototipoCompras.Services;
 
 public interface IContactosApiService
 {
-    Task<List<ContactoExternoDto>> ObtenerContactosAsync();
+    Task<ContactosApiResultadoViewModel> ObtenerContactosAsync();
 }

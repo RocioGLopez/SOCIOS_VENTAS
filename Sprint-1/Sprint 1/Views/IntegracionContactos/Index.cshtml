@@ -1,4 +1,4 @@
-﻿@model List<PrototipoCompras.Models.ContactoExternoDto>
+﻿@model PrototipoCompras.Models.ContactosApiResultadoViewModel
 
 @{
     ViewData["Title"] = "API Contactos";
@@ -6,7 +6,7 @@
 
 <div class="mb-4">
     <h2 class="fw-bold">📇 Contactos externos</h2>
-    <p class="text-muted mb-0">Consumo autenticado del módulo de contactos.</p>
+    <p class="text-muted mb-0">Consumo autenticado del módulo de proveedores/contactos.</p>
 </div>
 
 <div class="card shadow-sm">
@@ -14,28 +14,42 @@
         Lista de contactos
     </div>
     <div class="card-body">
-        @if (Model.Any())
+        @if (!string.IsNullOrWhiteSpace(Model.Error))
+        {
+            <div class="alert alert-danger">
+                <strong>Error:</strong> @Model.Error
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.RawResponse))
+            {
+                <details>
+                    <summary>Ver respuesta cruda de la API</summary>
+                    <pre style="white-space: pre-wrap;">@Model.RawResponse</pre>
+                </details>
+            }
+        }
+        else if (Model.Contactos.Any())
         {
             <div class="table-responsive">
                 <table class="table table-bordered table-hover align-middle">
                     <thead class="table-dark">
                         <tr>
                             <th>ID</th>
-                            <th>Nombre completo</th>
+                            <th>Contacto</th>
+                            <th>Email</th>
                             <th>Teléfono</th>
-                            <th>Correo</th>
                             <th>Empresa</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model)
+                        @foreach (var item in Model.Contactos)
                         {
                             <tr>
-                                <td>@item.IdFinal</td>
-                                <td>@item.NombreCompletoFinal</td>
-                                <td>@item.Telefono</td>
-                                <td>@item.CorreoFinal</td>
-                                <td>@(string.IsNullOrWhiteSpace(item.EmpresaFinal) ? "-" : item.EmpresaFinal)</td>
+                                <td>@item.IdContacto</td>
+                                <td>@item.NombreCompleto</td>
+                                <td>@item.Email</td>
+                                <td>@(string.IsNullOrWhiteSpace(item.Telefono) ? "-" : item.Telefono)</td>
+                                <td>@item.EmpresaNombre</td>
                             </tr>
                         }
                     </tbody>
@@ -45,7 +59,7 @@
         else
         {
             <div class="alert alert-warning mb-0">
-                No se pudieron obtener contactos, o la API devolvió una estructura distinta.
+                La API respondió sin registros.
             </div>
         }
     </div>
