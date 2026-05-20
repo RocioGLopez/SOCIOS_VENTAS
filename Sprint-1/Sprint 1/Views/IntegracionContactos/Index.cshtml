@@ -1,0 +1,52 @@
+﻿@model List<PrototipoCompras.Models.ContactoExternoDto>
+
+@{
+    ViewData["Title"] = "API Contactos";
+}
+
+<div class="mb-4">
+    <h2 class="fw-bold">📇 Contactos externos</h2>
+    <p class="text-muted mb-0">Consumo autenticado del módulo de contactos.</p>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        Lista de contactos
+    </div>
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre completo</th>
+                            <th>Teléfono</th>
+                            <th>Correo</th>
+                            <th>Empresa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.IdFinal</td>
+                                <td>@item.NombreCompletoFinal</td>
+                                <td>@item.Telefono</td>
+                                <td>@item.CorreoFinal</td>
+                                <td>@(string.IsNullOrWhiteSpace(item.EmpresaFinal) ? "-" : item.EmpresaFinal)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning mb-0">
+                No se pudieron obtener contactos, o la API devolvió una estructura distinta.
+            </div>
+        }
+    </div>
+</div>

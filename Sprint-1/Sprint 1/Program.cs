@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using PrototipoCompras.Data;
 using PrototipoCompras.Services;
 
-//Hola me llamo John
+// Hola me llamo John
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +20,24 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Account/Login";
     });
 
+// Usa DefaultConnection si existe; si no, usa Admin
+var dbConnection =
+    builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? builder.Configuration.GetConnectionString("Admin")
+    ?? throw new InvalidOperationException("No se encontró una cadena de conexión válida en appsettings.json");
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(dbConnection));
+
+// HttpClient para consumir la API externa de contactos
+builder.Services.AddHttpClient<IContactosApiService, ContactosApiService>(client =>
+{
+    var baseUrl = builder.Configuration["ExternalApis:ContactosBaseUrl"]
+                  ?? "https://web-service-contactos.onrender.com/";
+
+    client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(20);
+});
 
 var app = builder.Build();
 
@@ -45,7 +61,6 @@ using (var scope = app.Services.CreateScope())
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -55,7 +70,6 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
-
 app.UseAuthorization();
 
 app.MapControllerRoute(
