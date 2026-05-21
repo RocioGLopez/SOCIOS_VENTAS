@@ -29,4 +29,7 @@ public class SolicitudCompra
     public bool GeneradaAutomaticamente { get; set; } = false;
 
     public int? InventarioProductoId { get; set; }
+
+    // NUEVO: fecha en que la entidad externa necesita los productos
+    public DateTime? FechaEntregaRequerida { get; set; }
 }

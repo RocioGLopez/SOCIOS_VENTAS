@@ -8,41 +8,55 @@ using PrototipoCompras.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// ── Servicios existentes ───────────────────────────────────────
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IBitacoraService, BitacoraService>();
 
-// Add cookie authentication so we can sign-in users from AccountController
+// ── Autenticación por cookie ───────────────────────────────────
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Account/Login";
     });
 
-// Usa DefaultConnection si existe; si no, usa Admin
+// ── Cadena de conexión ─────────────────────────────────────────
 var dbConnection =
     builder.Configuration.GetConnectionString("DefaultConnection")
     ?? builder.Configuration.GetConnectionString("Admin")
-    ?? throw new InvalidOperationException("No se encontr� una cadena de conexi�n v�lida en appsettings.json");
+    ?? throw new InvalidOperationException("No se encontró una cadena de conexión válida en appsettings.json");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(dbConnection));
 
-// HttpClient para consumir la API externa de contactos
+// ── HttpClient para API externa de contactos ───────────────────
 builder.Services.AddHttpClient<IContactosApiService, ContactosApiService>(client =>
 {
     var baseUrl = builder.Configuration["ExternalApis:ContactosBaseUrl"]
                   ?? "https://web-service-contactos.onrender.com/";
-
     client.BaseAddress = new Uri(baseUrl);
     client.Timeout = TimeSpan.FromSeconds(20);
 });
 
+// ── NUEVO: Controllers para la API REST ───────────────────────
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// ── NUEVO: CORS para entidades externas ───────────────────────
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ExternalEntities", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
-// Apply pending EF Core migrations at startup so seeded data is created.
-// If the DB server is not reachable, log the error and allow the app to continue.
+// ── Migraciones automáticas al arrancar ───────────────────────
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -57,7 +71,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configure the HTTP request pipeline.
+// ── Pipeline ──────────────────────────────────────────────────
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -66,12 +80,20 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
+
+// ── NUEVO: CORS antes de Auth ─────────────────────────────────
+app.UseCors("ExternalEntities");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
+// ── NUEVO: Swagger ────────────────────────────────────────────
+app.UseSwagger();
+app.UseSwaggerUI();
+
+// ── Rutas ─────────────────────────────────────────────────────
+app.MapControllers();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
