@@ -21,22 +21,19 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 // ── Cadena de conexión ─────────────────────────────────────────
-var dbConnection =
-    builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? builder.Configuration.GetConnectionString("Admin")
-    ?? throw new InvalidOperationException("No se encontró una cadena de conexión válida en appsettings.json");
+// ── Cadena de conexión ─────────────────────────────────────────
+var dbConnection = builder.Configuration.GetConnectionString("AzureConnection")
+    ?? throw new InvalidOperationException("No se encontró la cadena de conexión AzureConnection en appsettings.json");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(dbConnection));
+    options.UseSqlServer(dbConnection, sqlOptions =>
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,                // número de intentos
+            maxRetryDelay: TimeSpan.FromSeconds(10), // tiempo máximo entre intentos
+            errorNumbersToAdd: null
+        )
+    ));
 
-// ── HttpClient para API externa de contactos ───────────────────
-builder.Services.AddHttpClient<IContactosApiService, ContactosApiService>(client =>
-{
-    var baseUrl = builder.Configuration["ExternalApis:ContactosBaseUrl"]
-                  ?? "https://web-service-contactos.onrender.com/";
-    client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = TimeSpan.FromSeconds(20);
-});
 
 // ── NUEVO: Controllers para la API REST ───────────────────────
 builder.Services.AddControllers();
