@@ -33,6 +33,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
             errorNumbersToAdd: null
         )
     ));
+    // ── HttpClient para API externa de contactos ───────────────────
+builder.Services.AddHttpClient<IContactosApiService, ContactosApiService>(client =>
+{
+    var baseUrl = builder.Configuration["ExternalApis:ContactosBaseUrl"]
+                  ?? "https://web-service-contactos.onrender.com/";
+    client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(20);
+});
 
 
 // ── NUEVO: Controllers para la API REST ───────────────────────
