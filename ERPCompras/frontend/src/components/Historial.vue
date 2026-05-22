@@ -79,7 +79,7 @@ export default {
         if (this.fechaInicio) params.append('inicio', this.fechaInicio)
         if (this.fechaFin)    params.append('fin', this.fechaFin)
 
-       const url = `http://127.0.0.1:5000/compras/historial?${params.toString()}`
+      const url = `https://socios-ventas-app.azurewebsites.net/api/erp/compras/historial?${params.toString()}`
         const response = await fetch(url)
 
         if (!response.ok) throw new Error('Error al obtener datos')

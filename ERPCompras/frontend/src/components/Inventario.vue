@@ -63,6 +63,8 @@
 </template>
 
 <script>
+const BASE_URL = 'https://socios-ventas-app.azurewebsites.net/api/erp'
+
 export default {
   name: 'InventarioView',
   data() {
@@ -84,19 +86,19 @@ export default {
       this.error = null
       try {
         const [inventarioRes, alertasRes, solicitudesRes, notificacionesRes] = await Promise.all([
-          fetch('http://127.0.0.1:5000/inventario'),
-          fetch('http://127.0.0.1:5000/alertas-inventario'),
-          fetch('http://127.0.0.1:5000/solicitudes-compra'),
-          fetch('http://127.0.0.1:5000/notificaciones/jefe-compras')
+          fetch(`${BASE_URL}/inventario`),
+          fetch(`${BASE_URL}/alertas-inventario`),
+          fetch(`${BASE_URL}/solicitudes-compra`),
+          fetch(`${BASE_URL}/notificaciones/jefe-compras`)
         ])
 
-        this.inventario = await inventarioRes.json()
-        this.alertas = await alertasRes.json()
-        this.solicitudes = await solicitudesRes.json()
+        this.inventario     = await inventarioRes.json()
+        this.alertas        = await alertasRes.json()
+        this.solicitudes    = await solicitudesRes.json()
         this.notificaciones = await notificacionesRes.json()
 
         this.inventario.forEach(item => {
-          this.edicionStock[item.id] = item.stock
+          this.edicionStock[item.id]  = item.stock
           this.edicionMinimo[item.id] = item.stock_minimo
         })
       } catch (e) {
@@ -105,7 +107,7 @@ export default {
     },
 
     async guardarStock(productoId) {
-      await fetch('http://127.0.0.1:5000/inventario/ajustar-stock', {
+      await fetch(`${BASE_URL}/inventario/ajustar-stock`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -117,7 +119,7 @@ export default {
     },
 
     async guardarMinimo(productoId) {
-      await fetch('http://127.0.0.1:5000/inventario/configurar-minimo', {
+      await fetch(`${BASE_URL}/inventario/configurar-minimo`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -161,16 +163,7 @@ button {
   border-radius: 4px;
   cursor: pointer;
 }
-.bajo {
-  color: #c0392b;
-  font-weight: bold;
-}
-.normal {
-  color: #27ae60;
-  font-weight: bold;
-}
-.error {
-  color: #c0392b;
-  margin: 15px 0;
-}
+.bajo   { color: #c0392b; font-weight: bold; }
+.normal { color: #27ae60; font-weight: bold; }
+.error  { color: #c0392b; margin: 15px 0; }
 </style>
