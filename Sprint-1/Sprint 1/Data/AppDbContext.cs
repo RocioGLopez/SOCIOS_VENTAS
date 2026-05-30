@@ -125,7 +125,8 @@ public class AppDbContext : DbContext
             new CatalogoProducto { Id = 2, Nombre = "CPU",      Categoria = "Computadoras", StockDisponible = 30, CantidadMinima = 1, CantidadMaxima = 25, Activo = true, FechaCreacion = new DateTime(2024, 1, 1) },
             new CatalogoProducto { Id = 3, Nombre = "Laptop",   Categoria = "Computadoras", StockDisponible = 20, CantidadMinima = 1, CantidadMaxima = 25, Activo = true, FechaCreacion = new DateTime(2024, 1, 1) },
             new CatalogoProducto { Id = 4, Nombre = "Teclado",  Categoria = "Periféricos",  StockDisponible = 80, CantidadMinima = 1, CantidadMaxima = 25, Activo = true, FechaCreacion = new DateTime(2024, 1, 1) },
-            new CatalogoProducto { Id = 5, Nombre = "Mouse",    Categoria = "Periféricos",  StockDisponible = 80, CantidadMinima = 1, CantidadMaxima = 25, Activo = true, FechaCreacion = new DateTime(2024, 1, 1) }
+            new CatalogoProducto { Id = 5, Nombre = "Mouse",    Categoria = "Periféricos",  StockDisponible = 80, CantidadMinima = 1, CantidadMaxima = 25, Activo = true, FechaCreacion = new DateTime(2024, 1, 1) },
+            new CatalogoProducto { Id = 6, Nombre = "Laptop Dell", Categoria = "Computadoras", StockDisponible = 500, CantidadMinima = 1, CantidadMaxima = 25, Activo = true, FechaCreacion = new DateTime(2024, 1, 1) }
         );
     }
 }
